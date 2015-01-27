@@ -30,7 +30,9 @@ void setup()
 
 void loop()
 {
-    MinIMU9AHRS_loop();
-    MinIMU9AHRS_printdata();
-    delay(20);
+    if (MinIMU9AHRS_loop())
+    {
+        MinIMU9AHRS_printdata();
+    }
+    delay(10);
 }
