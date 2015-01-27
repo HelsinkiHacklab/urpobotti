@@ -1,5 +1,11 @@
 // Motor controller and AHRS for Urpobotti
 
+// Get this library from http://bleaklow.com/files/2010/Task.tar.gz (and fix WProgram.h -> Arduino.h)
+// and read http://bleaklow.com/2010/07/20/a_very_simple_arduino_task_manager.html for background and instructions
+#include <Task.h>
+#include <TaskScheduler.h>
+
+
 
 // LSM303 magnetometer calibration constants; use the Calibrate example from
 // the Pololu LSM303 library to find the right values for your board
@@ -21,12 +27,15 @@ DualVNH5019MotorShield md;
 
 // Needs to be included here or linker won't find it
 #include <Wire.h>
+
+// TODO: We probably want to actually read the IMU with the panda directly
 // IMU https://www.pololu.com/product/1265 (links to the gyro and compass libs)
 // Gyro and compass libraries
 #include <L3G.h>
 #include <LSM303.h>
 // AHRS library: https://github.com/rambo/MinIMU-9-Arduino-AHRS
 #include <MinIMU9AHRS.h>
+
 
 
 // Input pins for the optical encoders in the motor shafts
@@ -58,7 +67,14 @@ void pulse_input_handler(void* inptr)
     input->new_data = true;
 }
 
+#include "pidtask.h"
+MotorPID motorctrl;
 
+#include "ahrstask.h"
+AHRSTask ahrs_task;
+
+#include "serialtask.h"
+SerialReader serialreader;
 
 void setup()
 {
@@ -77,9 +93,10 @@ void setup()
 
 void loop()
 {
-    if (MinIMU9AHRS_loop())
-    {
-        MinIMU9AHRS_printdata();
-    }
-    delay(10);
+    // Initialise the task list and scheduler. (uitask must be the last one, otherwise it robs priority from everything else)
+    Task *tasks[] = { &serialreader, &ahrs_task, &motorctrl };
+    TaskScheduler sched(tasks, NUM_TASKS(tasks));
+    
+    // Run the scheduler - never returns.
+    sched.run();
 }
