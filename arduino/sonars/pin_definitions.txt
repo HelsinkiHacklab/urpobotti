@@ -1,0 +1,13 @@
+//When second level is mounted above base in correct orientation, sonars "between" levels.
+
+LEFT SONAR:
+TRIG/TX -> D2
+ECHO/RX -> D3
+
+CENTER SONAR:
+TRIG	-> D4
+ECHO	-> D5
+
+RIGHT SONAR:
+TRIG/TX -> D6
+ECHO/RX -> D7
