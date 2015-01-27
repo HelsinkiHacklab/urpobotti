@@ -1,5 +1,15 @@
 // Motor controller and AHRS for Urpobotti
 
+
+// LSM303 magnetometer calibration constants; use the Calibrate example from
+// the Pololu LSM303 library to find the right values for your board
+#define M_X_MIN -421
+#define M_Y_MIN -639
+#define M_Z_MIN -238
+#define M_X_MAX 424
+#define M_Y_MAX 295
+#define M_Z_MAX 472
+
 // IMU https://www.pololu.com/product/1265 (links to the gyro and compass libs)
 // AHRS library: https://github.com/rambo/MinIMU-9-Arduino-AHRS
 // Motor shield https://www.pololu.com/product/2502
