@@ -10,31 +10,68 @@
 #define M_Y_MAX 295
 #define M_Z_MAX 472
 
-// IMU https://www.pololu.com/product/1265 (links to the gyro and compass libs)
-// AHRS library: https://github.com/rambo/MinIMU-9-Arduino-AHRS
+
+// Pin change interrupt lib https://github.com/rambo/PinChangeInt_userData
+#include "PinChangeInt_userData.h"
+
+
 // Motor shield https://www.pololu.com/product/2502
 #include "DualVNH5019MotorShield.h"
 DualVNH5019MotorShield md;
 
 // Needs to be included here or linker won't find it
 #include <Wire.h>
+// IMU https://www.pololu.com/product/1265 (links to the gyro and compass libs)
 // Gyro and compass libraries
 #include <L3G.h>
 #include <LSM303.h>
+// AHRS library: https://github.com/rambo/MinIMU-9-Arduino-AHRS
 #include <MinIMU9AHRS.h>
 
 
 // Input pins for the optical encoders in the motor shafts
 const uint8_t motor_opto_pins[] = { 5, 13 };
+
+// To hold data for reach motor encoder
+typedef struct {
+    const uint8_t pin;
+    volatile boolean new_data;
+    volatile uint8_t pulses;
+} PulseInput;
+
+// Initialize the inputs to an array
+PulseInput pulse_inputs[] = {
+    { 5 }, // right == M1
+    { 13 }, // left == M2
+};
+const uint8_t pulse_inputs_len = sizeof(pulse_inputs) / sizeof(PulseInput);
+
+
 const uint8_t pulses_per_revolution = 10;
 // tire size in case we need to calculate distance the tires have travelled...
 const uint8_t tire_size_mm = 67;
 
+void pulse_input_handler(void* inptr)
+{
+    PulseInput* input = (PulseInput*)inptr;
+    input->pulses += 1;
+    input->new_data = true;
+}
+
+
+
 void setup()
 {
     Serial.begin(115200);
+    // Attach pin change interrupts for the pulse inputs
+    for (uint8_t i=0; i < pulse_inputs_len; i++)
+    {
+        PCintPort::attachInterrupt(pulse_inputs[i].pin, &pulse_input_handler, RISING, &pulse_inputs[i]);
+    }
+
     md.init();
     MinIMU9AHRS_setup();
+
     Serial.println(F("Urpobotti booted"));
 }
 
