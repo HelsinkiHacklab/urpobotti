@@ -47,9 +47,6 @@ void pulse_input_handler(void* inptr)
 #include "pidtask.h"
 MotorPID motorctrl;
 
-#include "ahrstask.h"
-AHRSTask ahrs_task;
-
 #include "serialtask.h"
 SerialReader serialreader;
 
