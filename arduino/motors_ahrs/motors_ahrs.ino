@@ -6,17 +6,6 @@
 #include <TaskScheduler.h>
 
 
-
-// LSM303 magnetometer calibration constants; use the Calibrate example from
-// the Pololu LSM303 library to find the right values for your board
-#define M_X_MIN -421
-#define M_Y_MIN -639
-#define M_Z_MIN -238
-#define M_X_MAX 424
-#define M_Y_MAX 295
-#define M_Z_MAX 472
-
-
 // Pin change interrupt lib https://github.com/rambo/PinChangeInt_userData
 #include "PinChangeInt_userData.h"
 
@@ -24,18 +13,6 @@
 // Motor shield https://www.pololu.com/product/2502
 #include "DualVNH5019MotorShield.h"
 DualVNH5019MotorShield md;
-
-// Needs to be included here or linker won't find it
-#include <Wire.h>
-
-// TODO: We probably want to actually read the IMU with the panda directly
-// IMU https://www.pololu.com/product/1265 (links to the gyro and compass libs)
-// Gyro and compass libraries
-#include <L3G.h>
-#include <LSM303.h>
-// AHRS library: https://github.com/rambo/MinIMU-9-Arduino-AHRS
-#include <MinIMU9AHRS.h>
-
 
 
 // Input pins for the optical encoders in the motor shafts
@@ -86,7 +63,6 @@ void setup()
     }
 
     md.init();
-    MinIMU9AHRS_setup();
 
     Serial.println(F("Urpobotti booted"));
 }
@@ -94,7 +70,7 @@ void setup()
 void loop()
 {
     // Initialise the task list and scheduler. (uitask must be the last one, otherwise it robs priority from everything else)
-    Task *tasks[] = { &serialreader, &ahrs_task, &motorctrl };
+    Task *tasks[] = { &serialreader, &motorctrl };
     TaskScheduler sched(tasks, NUM_TASKS(tasks));
     
     // Run the scheduler - never returns.
