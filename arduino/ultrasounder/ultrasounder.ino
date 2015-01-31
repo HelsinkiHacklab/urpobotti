@@ -25,7 +25,7 @@ void setup()
   {
     pingTimer[i] = pingTimer[i - 1] + PING_INTERVAL;
   }
-  Serial.println(F("Pinger booted"));
+  Serial.println(F("ultrasounder booted"));
 }
 
 

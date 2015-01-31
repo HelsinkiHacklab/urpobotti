@@ -13,7 +13,7 @@
 // Motor shield https://www.pololu.com/product/2502
 #include "DualVNH5019MotorShield.h"
 DualVNH5019MotorShield md;
-
+// Reminder: speeds go from -400 to +400
 
 // Input pins for the optical encoders in the motor shafts
 const uint8_t motor_opto_pins[] = { 5, 13 };
@@ -61,7 +61,7 @@ void setup()
 
     md.init();
 
-    Serial.println(F("Urpobotti booted"));
+    Serial.println(F("motorctrl booted"));
 }
 
 void loop()
@@ -69,7 +69,7 @@ void loop()
     // Initialise the task list and scheduler. (uitask must be the last one, otherwise it robs priority from everything else)
     Task *tasks[] = { &serialreader, &motorctrl };
     TaskScheduler sched(tasks, NUM_TASKS(tasks));
-    
+
     // Run the scheduler - never returns.
     sched.run();
 }
