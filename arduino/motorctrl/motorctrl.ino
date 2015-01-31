@@ -15,7 +15,6 @@
 DualVNH5019MotorShield md;
 // Reminder: speeds go from -400 to +400
 
-
 // To hold data for reach motor encoder
 typedef struct {
     const uint8_t pin;
@@ -31,6 +30,7 @@ PulseInput pulse_inputs[] = {
 const uint8_t pulse_inputs_len = sizeof(pulse_inputs) / sizeof(PulseInput);
 
 
+// "täysii" = ~80Hz @3s LiPo
 const uint8_t pulses_per_revolution = 10;
 // tire size in case we need to calculate distance the tires have travelled...
 const uint8_t tire_size_mm = 67;
@@ -42,6 +42,8 @@ void pulse_input_handler(void* inptr)
     input->new_data = true;
 }
 
+// Get this from https://github.com/br3ttb/Arduino-PID-Library/
+#include <PID_v1.h>
 #include "pidtask.h"
 MotorPID motorctrl;
 
