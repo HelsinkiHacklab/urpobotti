@@ -40,14 +40,15 @@ void SerialReader::run(uint32_t now)
     for (uint8_t d = Serial.available(); d > 0; d--)
     {
         parsebuffer[incoming_position] = Serial.read();
+        /*
         Serial.print(F("DEBUG: parsebuffer["));
         Serial.print(incoming_position, DEC);
         Serial.print(F("]=0x"));
         Serial.print(parsebuffer[incoming_position], HEX);
         Serial.print(F(" "));
         Serial.println(parsebuffer[incoming_position]);
-        
-        
+        */
+
         // Check for line end and in such case do special things
         if (   parsebuffer[incoming_position] == 0xA // LF
             || parsebuffer[incoming_position] == 0xD) // CR
@@ -65,8 +66,9 @@ void SerialReader::run(uint32_t now)
             process_command();
             // Reset position
             incoming_position = 0;
+            parsebuffer[0]=0x0;
             // PONDER: Explicitly clear the buffer with memset ??
-            memset(&parsebuffer, 0x0, sizeof(parsebuffer));
+            //memset(&parsebuffer, 0x0, sizeof(parsebuffer));
             return;
         }
 
@@ -81,8 +83,9 @@ void SerialReader::run(uint32_t now)
             Serial.println(F(" clearing buffers"));
             // Reset position
             incoming_position = 0;
+            parsebuffer[0]=0x0;
             // PONDER: Explicitly clear the buffer with memset ??
-            memset(&parsebuffer, 0x0, sizeof(parsebuffer));
+            //memset(&parsebuffer, 0x0, sizeof(parsebuffer));
             return;
         }
     }
@@ -90,34 +93,40 @@ void SerialReader::run(uint32_t now)
 
 void SerialReader::process_command()
 {
+    /*
     Serial.print(F("DEBUG: parsing: "));
     Serial.println(parsebuffer);
+    */
     uint16_t m1value;
     uint16_t m2value;
     if (sscanf(parsebuffer, "SPDS:%d,%d", &m1value, &m2value) == 2)
     {
-        // TODO: Use the pidtask to set speed in PPS
+        // TODO: Use the motorctrl to set speed in PPS
+        /*
         Serial.print(F("DEBUG: setting speeds "));
         Serial.print(m1value);
         Serial.print(",");
         Serial.println(m2value);
+        */
         motorctrl.setSpeeds(m1value, m2value);
         return;
     }
     if (sscanf(parsebuffer, "BRKS:%d,%d", &m1value, &m2value) == 2)
     {
-        // TODO: Use the pidtask to set brakes
+        // TODO: Use the motorctrl to set brakes
+        /*
         Serial.print(F("DEBUG: setting brakes "));
         Serial.print(m1value);
         Serial.print(",");
         Serial.println(m2value);
+        */
         md.setBrakes(m1value, m2value);
         Serial.println(0x6); // ACK
         return;
     }
     if (sscanf(parsebuffer, "BRK1:%d,%d", &m1value, &m2value) == 2)
     {
-        // TODO: Use the pidtask to set brakes
+        // TODO: Use the motorctrl to set brakes
         if (m1value == 1)
         {
             md.setM1Brake(m2value);

@@ -44,7 +44,7 @@ bool MotorPID::canRun(uint32_t now)
     }
     */
     // or 100ms has elapsed
-    if ((now - last_run) > 100)
+    if ((now - last_run) > 1000)
     {
         return true;
     }
