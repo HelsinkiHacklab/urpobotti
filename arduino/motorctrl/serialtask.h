@@ -40,15 +40,6 @@ void SerialReader::run(uint32_t now)
     for (uint8_t d = Serial.available(); d > 0; d--)
     {
         parsebuffer[incoming_position] = Serial.read();
-        /*
-        Serial.print(F("DEBUG: parsebuffer["));
-        Serial.print(incoming_position, DEC);
-        Serial.print(F("]=0x"));
-        Serial.print(parsebuffer[incoming_position], HEX);
-        Serial.print(F(" "));
-        Serial.println(parsebuffer[incoming_position]);
-        */
-
         // Check for line end and in such case do special things
         if (   parsebuffer[incoming_position] == 0xA // LF
             || parsebuffer[incoming_position] == 0xD) // CR
@@ -114,31 +105,13 @@ void SerialReader::process_command()
     if (sscanf(parsebuffer, "BRKS:%d,%d", &m1value, &m2value) == 2)
     {
         // TODO: Use the motorctrl to set brakes
-        /*
-        Serial.print(F("DEBUG: setting brakes "));
-        Serial.print(m1value);
-        Serial.print(",");
-        Serial.println(m2value);
-        */
-        md.setBrakes(m1value, m2value);
-        Serial.println(0x6); // ACK
+        motorctrl.setBrakes(m1value, m2value);
         return;
     }
     if (sscanf(parsebuffer, "BRK1:%d,%d", &m1value, &m2value) == 2)
     {
-        // TODO: Use the motorctrl to set brakes
-        if (m1value == 1)
-        {
-            md.setM1Brake(m2value);
-            Serial.println(0x6); // ACK
-            return;
-        }
-        if (m1value == 2)
-        {
-            md.setM2Brake(m2value);
-            Serial.println(0x6); // ACK
-            return;
-        }
+        motorctrl.set1Brake(m1value, m2value);
+        return;
     }
 
     // Do we have other command to parse ?

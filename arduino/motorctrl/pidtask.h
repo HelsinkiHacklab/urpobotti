@@ -13,7 +13,8 @@ class MotorPID : public Task
         virtual void run(uint32_t now);
         virtual bool canRun(uint32_t now);
         virtual void setSpeeds(int16_t m1value, int16_t m2value);
-        // TODO: control methods for setting desired speeds etc and receiving new-data notifications from the AHRS task
+        virtual void setBrakes(int16_t m1value, int16_t m2value);
+        virtual void set1Brake(uint8_t mnum, int16_t bvalue);
 
     private:
         uint32_t last_run;
@@ -33,7 +34,14 @@ MotorPID::MotorPID()
 
 bool MotorPID::canRun(uint32_t now)
 {
-    // Run if we have new pulse data
+    // Run if we have faulted motor controller
+    if (   md.getM1Fault()
+        || md.getM2Fault())
+    {
+        return true;
+    }
+
+    // PONDER: Run if we have new pulse data
     /*
     for (uint8_t i=0; i < pulse_inputs_len; i++)
     {
@@ -43,7 +51,7 @@ bool MotorPID::canRun(uint32_t now)
         }
     }
     */
-    // or 100ms has elapsed
+    // Run if 100ms has elapsed
     if ((now - last_run) > 1000)
     {
         return true;
@@ -96,9 +104,35 @@ void MotorPID::setSpeeds(int16_t m1value, int16_t m2value)
     // Reverse M1 direction so we go forward on positive numbers
     md.setSpeeds(-m1value, m2value);
     Serial.println(0x6); // ACK
-    return;
 }
 
+void MotorPID::setBrakes(int16_t m1value, int16_t m2value)
+{
+    if (faulted)
+    {
+        Serial.println(0x15); // NACK
+        return;
+    }
+    md.setBrakes(m1value, m2value);
+    Serial.println(0x6); // ACK
+}
+
+void MotorPID::set1Brake(uint8_t mnum, int16_t bvalue)
+{
+    if (mnum == 1)
+    {
+        md.setM1Brake(bvalue);
+        Serial.println(0x6); // ACK
+        return;
+    }
+    if (mnum == 2)
+    {
+        md.setM2Brake(bvalue);
+        Serial.println(0x6); // ACK
+        return;
+    }
+    Serial.println(0x15); // NACK
+}
 
 
 #endif
