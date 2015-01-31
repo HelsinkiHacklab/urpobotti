@@ -101,8 +101,7 @@ void SerialReader::process_command()
         Serial.print(m1value);
         Serial.print(",");
         Serial.println(m2value);
-        md.setSpeeds(m1value, m2value);
-        Serial.println(0x6); // ACK
+        motorctrl.setSpeeds(m1value, m2value);
         return;
     }
     if (sscanf(parsebuffer, "BRKS:%d,%d", &m1value, &m2value) == 2)

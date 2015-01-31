@@ -15,8 +15,6 @@
 DualVNH5019MotorShield md;
 // Reminder: speeds go from -400 to +400
 
-// Input pins for the optical encoders in the motor shafts
-const uint8_t motor_opto_pins[] = { 5, 13 };
 
 // To hold data for reach motor encoder
 typedef struct {
@@ -56,6 +54,7 @@ void setup()
     // Attach pin change interrupts for the pulse inputs
     for (uint8_t i=0; i < pulse_inputs_len; i++)
     {
+        pinMode(pulse_inputs[i].pin, INPUT_PULLUP);
         PCintPort::attachInterrupt(pulse_inputs[i].pin, &pulse_input_handler, RISING, &pulse_inputs[i]);
     }
 
