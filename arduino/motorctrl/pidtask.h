@@ -56,9 +56,10 @@ void MotorPID::run(uint32_t now)
 {
     last_run = now;
 
+    /*
     for (uint8_t i=0; i < pulse_inputs_len; i++)
     {
-        Serial.print(F("pulse_inputs["));
+        Serial.print(F("DEBUG: pulse_inputs["));
         Serial.print(i, DEC);
         Serial.print(F("].pulses="));
         Serial.print(pulse_inputs[i].pulses, DEC);
@@ -68,10 +69,18 @@ void MotorPID::run(uint32_t now)
         }
         Serial.println("");
     }
-    Serial.print(F("M1 set speed="));
+    */
+    /*
+    Serial.print(F("DEBUG: M1 set speed="));
     Serial.println(m1_speed, DEC);
-    Serial.print(F("M2 set speed="));
+    Serial.print(F("DEBUG: M2 set speed="));
     Serial.println(m2_speed, DEC);
+    */
+
+    Serial.print(F("!PPS:"));
+    Serial.print(pulse_inputs[0].pulses*(1000/PPS_SAMPLE_TIME), DEC);
+    Serial.print(F(","));
+    Serial.println(pulse_inputs[1].pulses*(1000/PPS_SAMPLE_TIME), DEC);
 
     if (   md.getM1Fault()
         || md.getM2Fault())
