@@ -114,39 +114,6 @@ void SerialReader::process_command()
         return;
     }
 
-    int16_t Kpint, Kpdec, Kiint, Kidec, Kdint, Kddec;
-    // Arduino sscanf does not support floats, use fixed point
-    if (sscanf(parsebuffer, "TUN1:%d,%d.%d,%d.%d,%d.%d", &m1value, &Kpint, &Kpdec, &Kiint, &Kidec, &Kdint, &Kddec) == 7)
-    {
-        double Kp,Kd,Ki;
-        Serial.print(F("DEBUG: Kpint="));
-        Serial.print(Kpint, DEC);
-        Serial.print(F(" Kpdec="));
-        Serial.println(Kpdec, DEC);
-
-        Kp = (double)(((int16_t)Kpint*(int16_t)100)+Kpdec)/(int16_t)100;
-        Kd = (double)(((int16_t)Kiint*(int16_t)100)+Kidec)/(int16_t)100;
-        Ki = (double)(((int16_t)Kdint*(int16_t)100)+Kddec)/(int16_t)100;
-        Serial.print(F("Setting tuning values for M"));
-        Serial.print(m1value, DEC);
-        Serial.print(F(" Kp="));
-        Serial.print(Kp, DEC);
-        Serial.print(F(" Kd="));
-        Serial.print(Kd, DEC);
-        Serial.print(F(" Ki="));
-        Serial.println(Ki, DEC);
-        if (m1value == 1)
-        {
-            m1pid.SetTunings(Kp, Kd, Ki);
-        }
-        if (m1value == 2)
-        {
-            m2pid.SetTunings(Kp, Kd, Ki);
-        }
-        return;
-    }
-
-
     // Do we have other command to parse ?
 
     // If we did not parse a command return NACK

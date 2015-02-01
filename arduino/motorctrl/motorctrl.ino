@@ -42,8 +42,6 @@ void pulse_input_handler(void* inptr)
     input->new_data = true;
 }
 
-// Get this from https://github.com/br3ttb/Arduino-PID-Library/
-#include <PID_v1.h>
 #include "pidtask.h"
 MotorPID motorctrl;
 
