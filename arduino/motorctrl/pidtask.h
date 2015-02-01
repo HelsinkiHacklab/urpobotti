@@ -21,8 +21,6 @@ class MotorPID : public Task
 
     private:
         uint32_t last_run;
-        int16_t m1_ppstarget;
-        int16_t m2_ppstarget;
         int16_t m1_speed;
         int16_t m2_speed;
         boolean faulted;
@@ -33,8 +31,8 @@ MotorPID::MotorPID()
 {
     // Do we need to contruct something ?
     faulted = false;
-    m1_ppstarget = 0;
-    m2_ppstarget = 0;
+    m1_speed = 0;
+    m2_speed = 0;
 }
 
 bool MotorPID::canRun(uint32_t now)
@@ -82,8 +80,8 @@ void MotorPID::run(uint32_t now)
         md.setSpeeds(0, 0);
         faulted = true;
         Serial.println(F("PANIC: Motor fault!"));
-        m1_ppstarget = 0;
-        m2_ppstarget = 0;
+        m1_speed = 0;
+        m2_speed = 0;
         return;
     }
 
@@ -103,11 +101,9 @@ void MotorPID::setSpeeds(int16_t m1value, int16_t m2value)
         return;
     }
 
-    m1_ppstarget = m1value;
-    m2_ppstarget = m2value;
     // M1 is reversed
-    m1_speed = -1*(m1_ppstarget*PPS_MD_FACTOR);
-    m2_speed = m1_ppstarget*PPS_MD_FACTOR;
+    m1_speed = -m1value;
+    m2_speed = m2value;
 
     md.setSpeeds(m1_speed, m2_speed);
 
@@ -122,8 +118,8 @@ void MotorPID::setBrakes(int16_t m1value, int16_t m2value)
         return;
     }
     // The the speed targets to 0
-    m1_ppstarget = 0;
-    m2_ppstarget = 0;
+    m1_speed = 0;
+    m2_speed = 0;
     md.setBrakes(m1value, m2value);
     Serial.println(0x6); // ACK
 }
@@ -133,7 +129,7 @@ void MotorPID::set1Brake(uint8_t mnum, int16_t bvalue)
     if (mnum == 1)
     {
         // The the speed target to 0
-        m1_ppstarget = 0;
+        m1_speed = 0;
         md.setM1Brake(bvalue);
         Serial.println(0x6); // ACK
         return;
@@ -141,7 +137,7 @@ void MotorPID::set1Brake(uint8_t mnum, int16_t bvalue)
     if (mnum == 2)
     {
         // The the speed target to 0
-        m2_ppstarget = 0;
+        m2_speed = 0;
         md.setM2Brake(bvalue);
         Serial.println(0x6); // ACK
         return;
