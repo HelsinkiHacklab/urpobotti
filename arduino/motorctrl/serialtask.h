@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <Task.h>
 
-#define SERIAL_PARSE_BUFFER_SIZE 17 // 15 + crlf
+#define SERIAL_PARSE_BUFFER_SIZE 27 // 25 + crlf
 
 // We might actually want use the canrun 
 class SerialReader : public Task
@@ -88,8 +88,8 @@ void SerialReader::process_command()
     Serial.print(F("DEBUG: parsing: "));
     Serial.println(parsebuffer);
     */
-    uint16_t m1value;
-    uint16_t m2value;
+    int16_t m1value;
+    int16_t m2value;
     if (sscanf(parsebuffer, "SPDS:%d,%d", &m1value, &m2value) == 2)
     {
         // TODO: Use the motorctrl to set speed in PPS
@@ -113,6 +113,39 @@ void SerialReader::process_command()
         motorctrl.set1Brake(m1value, m2value);
         return;
     }
+
+    int16_t Kpint, Kpdec, Kiint, Kidec, Kdint, Kddec;
+    // Arduino sscanf does not support floats, use fixed point
+    if (sscanf(parsebuffer, "TUN1:%d,%d.%d,%d.%d,%d.%d", &m1value, &Kpint, &Kpdec, &Kiint, &Kidec, &Kdint, &Kddec) == 7)
+    {
+        double Kp,Kd,Ki;
+        Serial.print(F("DEBUG: Kpint="));
+        Serial.print(Kpint, DEC);
+        Serial.print(F(" Kpdec="));
+        Serial.println(Kpdec, DEC);
+
+        Kp = ((Kpint*100)+Kpdec)/100;
+        Kd = ((Kiint*100)+Kidec)/100;
+        Ki = ((Kdint*100)+Kddec)/100;
+        Serial.print(F("Setting tuning values for M"));
+        Serial.print(m1value, DEC);
+        Serial.print(F(" Kp="));
+        Serial.print(Kp, DEC);
+        Serial.print(F(" Kd="));
+        Serial.print(Kd, DEC);
+        Serial.print(F(" Ki="));
+        Serial.println(Ki, DEC);
+        if (m1value == 1)
+        {
+            m1pid.SetTunings(Kp, Kd, Ki);
+        }
+        if (m1value == 2)
+        {
+            m2pid.SetTunings(Kp, Kd, Ki);
+        }
+        return;
+    }
+
 
     // Do we have other command to parse ?
 

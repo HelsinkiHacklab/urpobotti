@@ -7,9 +7,9 @@
 #define PID_SAMPLE_TIME 100
 
 double m1Setpoint, m1Input, m1Output;
-PID m1pid(&m1Input, &m1Output, &m1Setpoint, 2, 5, 1, DIRECT);
+PID m1pid(&m1Input, &m1Output, &m1Setpoint, 3, 0, 0, DIRECT);
 double m2Setpoint, m2Input, m2Output;
-PID m2pid(&m2Input, &m2Output, &m2Setpoint, 2, 5, 1, DIRECT);
+PID m2pid(&m2Input, &m2Output, &m2Setpoint, 3, 0, 0, DIRECT);
 
 // We might actually want use the canrun 
 class MotorPID : public Task
@@ -61,21 +61,18 @@ bool MotorPID::canRun(uint32_t now)
 
     if (!m1pid_processed)
     {
-        m1Input = pulse_inputs[0].pulses;
+        m1Input = pulse_inputs[0].pulses * (1000 / PID_SAMPLE_TIME);
         m1pid_processed = m1pid.Compute();
     }
     if (!m2pid_processed)
     {
-        m2Input = pulse_inputs[1].pulses;
+        m2Input = pulse_inputs[1].pulses * (1000 / PID_SAMPLE_TIME);
         m2pid_processed = m2pid.Compute();
     }
     // Wait for both PIDs to process fully before resetting counts
     if (   m1pid_processed
         && m2pid_processed)
     {
-        // Reset the pulse counts
-        pulse_inputs[0].pulses = 0;
-        pulse_inputs[1].pulses = 0;
         return true;
     }
 
@@ -90,9 +87,19 @@ bool MotorPID::canRun(uint32_t now)
 void MotorPID::run(uint32_t now)
 {
     last_run = now;
-    // Clear the flags
-    m1pid_processed = false;
-    m2pid_processed = false;
+
+    for (uint8_t i=0; i < pulse_inputs_len; i++)
+    {
+        Serial.print(F("pulse_inputs["));
+        Serial.print(i, DEC);
+        Serial.print(F("].pulses="));
+        Serial.print(pulse_inputs[i].pulses, DEC);
+        if (pulse_inputs[i].new_data)
+        {
+            Serial.print(F(" <- NEW"));
+        }
+        Serial.println("");
+    }
 
     if (   md.getM1Fault()
         || md.getM2Fault())
@@ -107,36 +114,51 @@ void MotorPID::run(uint32_t now)
     }
 
     // Reverse M1 direction so we go forward on positive numbers
-    if (m1_ppstarget < 0)
+    if (   m1pid_processed
+        && m2pid_processed)
     {
-        md.setM1Speed(m1Output);
-    }
-    else
-    {
-        md.setM1Speed(-m1Output);
-    }
-    if (m2_ppstarget < 0)
-    {
-        md.setM2Speed(-m2Output);
-    }
-    else
-    {
-        md.setM2Speed(m2Output);
+        if (m1_ppstarget < 0)
+        {
+            md.setM1Speed(m1Output);
+        }
+        else
+        {
+            md.setM1Speed(-m1Output);
+        }
+        if (m2_ppstarget < 0)
+        {
+            md.setM2Speed(-m2Output);
+        }
+        else
+        {
+            md.setM2Speed(m2Output);
+        }
+
+
+        Serial.print(F("M1 SetPoint="));
+        Serial.print(m1Setpoint, DEC);
+        Serial.print(F(" input="));
+        Serial.print(m1Input, DEC);
+        Serial.print(F(" output="));
+        Serial.println(m1Output, DEC);
+    
+        Serial.print(F("M2 SetPoint="));
+        Serial.print(m2Setpoint, DEC);
+        Serial.print(F(" input="));
+        Serial.print(m2Input, DEC);
+        Serial.print(F(" output="));
+        Serial.println(m2Output, DEC);
+
+        // Clear the flags
+        m1pid_processed = false;
+        m2pid_processed = false;
+        // Reset the pulse counts
+        pulse_inputs[0].pulses = 0;
+        pulse_inputs[1].pulses = 0;
+        pulse_inputs[0].new_data = false;
+        pulse_inputs[1].new_data = false;
     }
     
-    Serial.print(F("M1 SetPoint="));
-    Serial.print(m1Setpoint, DEC);
-    Serial.print(F(" input="));
-    Serial.print(m1Input, DEC);
-    Serial.print(F(" output="));
-    Serial.println(m1Output, DEC);
-
-    Serial.print(F("M2 SetPoint="));
-    Serial.print(m2Setpoint, DEC);
-    Serial.print(F(" input="));
-    Serial.print(m2Input, DEC);
-    Serial.print(F(" output="));
-    Serial.println(m2Output, DEC);
 
     // PONDER: measuere motor current ? md.getM2CurrentMilliamps()
     // Do something...
