@@ -124,9 +124,9 @@ void SerialReader::process_command()
         Serial.print(F(" Kpdec="));
         Serial.println(Kpdec, DEC);
 
-        Kp = ((Kpint*100)+Kpdec)/100;
-        Kd = ((Kiint*100)+Kidec)/100;
-        Ki = ((Kdint*100)+Kddec)/100;
+        Kp = (double)(((int16_t)Kpint*(int16_t)100)+Kpdec)/(int16_t)100;
+        Kd = (double)(((int16_t)Kiint*(int16_t)100)+Kidec)/(int16_t)100;
+        Ki = (double)(((int16_t)Kdint*(int16_t)100)+Kddec)/(int16_t)100;
         Serial.print(F("Setting tuning values for M"));
         Serial.print(m1value, DEC);
         Serial.print(F(" Kp="));
