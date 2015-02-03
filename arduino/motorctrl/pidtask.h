@@ -56,6 +56,27 @@ void MotorPID::run(uint32_t now)
 {
     last_run = now;
 
+    if (   md.getM1Fault()
+        || md.getM2Fault())
+    {
+        md.setBrakes(0, 0);
+        md.setSpeeds(0, 0);
+        faulted = true;
+        if (md.getM1Fault())
+        {
+            Serial.println(F("PANIC: Motor M1 fault!"));
+        }
+        if (md.getM2Fault())
+        {
+            Serial.println(F("PANIC: Motor M2 fault!"));
+        }
+        m1_speed = 0;
+        m2_speed = 0;
+        // Rate limit messages
+        delay(100);
+        return;
+    }
+
     /*
     for (uint8_t i=0; i < pulse_inputs_len; i++)
     {
@@ -81,18 +102,6 @@ void MotorPID::run(uint32_t now)
     Serial.print(pulse_inputs[0].pulses*(1000/PPS_SAMPLE_TIME), DEC);
     Serial.print(F(","));
     Serial.println(pulse_inputs[1].pulses*(1000/PPS_SAMPLE_TIME), DEC);
-
-    if (   md.getM1Fault()
-        || md.getM2Fault())
-    {
-        md.setBrakes(0, 0);
-        md.setSpeeds(0, 0);
-        faulted = true;
-        Serial.println(F("PANIC: Motor fault!"));
-        m1_speed = 0;
-        m2_speed = 0;
-        return;
-    }
 
     pulse_inputs[0].pulses = 0;
     pulse_inputs[1].pulses = 0;
