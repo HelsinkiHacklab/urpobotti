@@ -58,6 +58,8 @@ class myclient(zmqdecorators.client):
         
         self.x = 0
         self.y = 0
+        self.rx = 0
+        self.ry = 0
         
         self.input_dev = device
         self.wrapper = zmqdecorators.zmq_bonjour_connect_wrapper(zmq.DEALER, SERVICE_NAME)
@@ -69,20 +71,50 @@ class myclient(zmqdecorators.client):
     def client_recv_callback(self, message_parts):
         print "client_recv_callback got %s" % (repr(message_parts))
 
+    def update_motorcontroller(self):
+        # TODO: implement V-mixer for the tank drive from x/y or alternatively just map the ys from 0-256 (127 center) to -400-400 (0 center)
+        lmap = -1 * (self.y - 127) * (400.0/127)
+        rmap = -1 * (self.ry - 127) * (400.0/127)
+        print("lmap=%d" % lmap)
+        print("rmap=%d" % rmap)
+        self.wrapper.call("set_speeds", rmap, lmap)
+        pass
+
     def handle_device_event(self, fd, events):
+        interesting_axis_changed = False
         for ev in self.input_dev.read():
+#            if (    ev.type == 3
+#                and ev.code in [0,1,2,3,4,5,16,17]):
+#                print("code: %d value: %d" % ( ev.code, ev.value ))
+#                print_event(ev)
+
             #print_event(ev)
             # ABS_X
             if (    ev.type == 3
                 and ev.code == 0):
                 self.x = ev.value
-                print("X=%d" % self.x)
+                interesting_axis_changed = True
 
             # ABS_Y
             if (    ev.type == 3
                 and ev.code == 1):
                 self.y = ev.value
-                print("Y=%d" % self.y)
+                interesting_axis_changed = True
+
+            # ABS_Z (right Y)
+            if (    ev.type == 3
+                and ev.code == 2):
+                self.rx = ev.value
+                interesting_axis_changed = True
+
+            # ABS_RZ (right X)
+            if (    ev.type == 3
+                and ev.code == 5):
+                self.ry = ev.value
+                interesting_axis_changed = True
+        
+        if interesting_axis_changed:
+            self.update_motorcontroller()
 
 
 if __name__ == "__main__":
