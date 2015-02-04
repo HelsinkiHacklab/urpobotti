@@ -56,6 +56,9 @@ class myclient(zmqdecorators.client):
     def __init__(self, device):
         super(myclient, self).__init__()
         
+        self.x = 0
+        self.y = 0
+        
         self.input_dev = device
         self.wrapper = zmqdecorators.zmq_bonjour_connect_wrapper(zmq.DEALER, SERVICE_NAME)
         self.stream = self.wrapper.stream
@@ -68,7 +71,19 @@ class myclient(zmqdecorators.client):
 
     def handle_device_event(self, fd, events):
         for ev in self.input_dev.read():
-            print_event(ev)
+            #print_event(ev)
+            # ABS_X
+            if (    ev.type == 3
+                and ev.code == 0):
+                self.x = ev.value
+                print("X=%d" % self.x)
+
+            # ABS_Y
+            if (    ev.type == 3
+                and ev.code == 1):
+                self.y = ev.value
+                print("Y=%d" % self.y)
+
 
 if __name__ == "__main__":
     import sys,os
