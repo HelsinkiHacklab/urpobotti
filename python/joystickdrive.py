@@ -61,7 +61,7 @@ class myclient(zmqdecorators.client):
         self.stream = self.wrapper.stream
         self.stream.on_recv(self.client_recv_callback)
 
-        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.input_dev, self.handle_device_event, ioloop_mod.IOLoop.instance().READ)
+        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.input_dev.fileno(), self.handle_device_event, ioloop_mod.IOLoop.instance().READ)
 
     def client_recv_callback(self, message_parts):
         print "client_recv_callback got %s" % (repr(message_parts))
