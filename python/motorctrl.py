@@ -11,16 +11,50 @@ SIGNALS_PORT = 7576
 class myserver(zmqdecorators.service):
     def __init__(self, service_name, service_port, serialport):
         super(myserver, self).__init__(service_name, service_port)
-        self.port = serialport
+        self.serial_port = serialport
+        self.input_buffer = ""
         # TODO: start serial reader thread and give out the pulses as signals
+
+        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
+
+    def handle_serial_event(self, fd, events):
+        # Copied from arbus that was thread based
+        if not self.serial_port.inWaiting():
+            # Don't try to read if there is no data, instead sleep (yield) a bit
+            time.sleep(0)
+            return
+        data = self.serial_port.read(1)
+        if len(data) == 0:
+            return
+
+        # Trim prefix NULLs and linebreaks
+        self.input_buffer = self.input_buffer.lstrip(chr(0x0) + "\r\n")
+        #print "input_buffer=%s" % repr(self.input_buffer)
+        if (    len(self.input_buffer) > 1
+            and self.input_buffer[-2:] == "\r\n"):
+            # Got a message, parse it (sans the CRLF) and empty the buffer
+            self.message_received(self.input_buffer[:-2])
+            self.input_buffer = ""
+
+    def message_received(self, message):
+        try:
+            #!PPS:0,0
+            if (self.input_buffer[:5] == '!PPS:'):
+                (rpps, lpps) = self.input_buffer[6:].split(',')
+                self.ppsreport(rpps, lpps)
+
+        except Exception,e:
+            print "message_received: Got exception %s" % e
+            # Ignore indexerrors, they just mean we could not parse the command
+            pass
+        pass
+
+    @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
+    def ppsreport(self, rpps, lpps):
+        print("DEBUG: reported PPS: %d,%d" % (rpps, lpps))
 
     def cleanup(self):
         print("Cleanup called")
-
-    @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
-    def testsignal(self):
-        print("Sending testsignal")
-        pass
 
     @zmqdecorators.method()
     def setspeeds(self, resp, m1speed, m2speed):
@@ -28,11 +62,7 @@ class myserver(zmqdecorators.service):
         # TODO: actually handle ACK/NACK
         resp.send("ACK")
 
-    @zmqdecorators.method()
-    def food(self, resp, arg, arg2):
-        print "Sending noms as reply"
-        # Remember, ZMQ only deals in strings, so typecast everything (JSON is a good idea too)
-        resp.send("Here's %s for the noms (for %s ppl)", str(arg), str(arg2))
+
 
 
 if __name__ == "__main__":
