@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import zmq
+from zmq.eventloop import ioloop as ioloop_mod
 import zmqdecorators
 
 SERVICE_NAME = "urpobot.motor"
@@ -26,7 +27,10 @@ class myserver(zmqdecorators.service):
         data = self.serial_port.read(1)
         if len(data) == 0:
             return
+        #print("DEBUG: data=%s" % data)
 
+        # Put the data into inpit buffer and check for CRLF
+        self.input_buffer += data
         # Trim prefix NULLs and linebreaks
         self.input_buffer = self.input_buffer.lstrip(chr(0x0) + "\r\n")
         #print "input_buffer=%s" % repr(self.input_buffer)
@@ -37,10 +41,11 @@ class myserver(zmqdecorators.service):
             self.input_buffer = ""
 
     def message_received(self, message):
+        #print("DEBUG: msg=%s" % message)
         try:
             #!PPS:0,0
-            if (self.input_buffer[:5] == '!PPS:'):
-                (rpps, lpps) = self.input_buffer[6:].split(',')
+            if (message[:5] == '!PPS:'):
+                (rpps, lpps) = message[5:].split(',')
                 self.ppsreport(rpps, lpps)
 
         except Exception,e:
@@ -51,7 +56,7 @@ class myserver(zmqdecorators.service):
 
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
     def ppsreport(self, rpps, lpps):
-        print("DEBUG: reported PPS: %d,%d" % (rpps, lpps))
+        #print("DEBUG: reported PPS: %s,%s" % (rpps, lpps))
 
     def cleanup(self):
         print("Cleanup called")
