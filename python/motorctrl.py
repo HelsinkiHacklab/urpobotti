@@ -59,7 +59,7 @@ class myserver(zmqdecorators.service):
     @zmqdecorators.method()
     def setspeeds(self, resp, m1speed, m2speed):
         self.port.write("SPDS:%d,%d\n" % (int(m1speed), int(m2speed)))
-        # TODO: actually handle ACK/NACK
+        # TODO: actually handle ACK/NACK somehow (we need to read it from the serialport but we can't block while waiting for it...)
         resp.send("ACK")
 
 
