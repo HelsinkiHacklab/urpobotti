@@ -73,11 +73,11 @@ class myclient(zmqdecorators.client):
 
     def update_motorcontroller(self):
         # TODO: implement V-mixer for the tank drive from x/y or alternatively just map the ys from 0-256 (127 center) to -400-400 (0 center)
-        lmap = -1 * (self.y - 127) * (400.0/127)
-        rmap = -1 * (self.ry - 127) * (400.0/127)
+        lmap = -1 * (self.y - 127) * (255.0/127)
+        rmap = -1 * (self.ry - 127) * (255.0/127)
         print("lmap=%d" % lmap)
         print("rmap=%d" % rmap)
-        self.wrapper.call("set_speeds", rmap, lmap)
+        self.wrapper.call("set_speeds", str(rmap), str(lmap))
         pass
 
     def handle_device_event(self, fd, events):
