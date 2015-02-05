@@ -4,8 +4,11 @@
 #include <Arduino.h>
 #include <Task.h>
 
-#define PPS_MD_FACTOR 5
 #define PPS_SAMPLE_TIME 100
+#define M1_DIR_PIN 7
+#define M2_DIR_PIN 8
+#define M1_PWM_PIN 10
+#define M2_PWM_PIN 11
 
 // We might actually want use the canrun 
 class MotorPID : public Task
@@ -16,8 +19,6 @@ class MotorPID : public Task
         virtual void run(uint32_t now);
         virtual bool canRun(uint32_t now);
         virtual void setSpeeds(int16_t m1value, int16_t m2value);
-        virtual void setBrakes(int16_t m1value, int16_t m2value);
-        virtual void set1Brake(uint8_t mnum, int16_t bvalue);
 
     private:
         uint32_t last_run;
@@ -33,17 +34,14 @@ MotorPID::MotorPID()
     faulted = false;
     m1_speed = 0;
     m2_speed = 0;
+    pinMode(M1_DIR_PIN, OUTPUT);
+    pinMode(M1_PWM_PIN, OUTPUT);
+    pinMode(M2_DIR_PIN, OUTPUT);
+    pinMode(M2_PWM_PIN, OUTPUT);
 }
 
 bool MotorPID::canRun(uint32_t now)
 {
-    // Run if we have faulted motor controller
-    if (   md.getM1Fault()
-        || md.getM2Fault())
-    {
-        return true;
-    }
-
     // Run if 100ms has elapsed
     if ((now - last_run) >= PPS_SAMPLE_TIME)
     {
@@ -55,27 +53,6 @@ bool MotorPID::canRun(uint32_t now)
 void MotorPID::run(uint32_t now)
 {
     last_run = now;
-
-    if (   md.getM1Fault()
-        || md.getM2Fault())
-    {
-        md.setBrakes(0, 0);
-        md.setSpeeds(0, 0);
-        faulted = true;
-        if (md.getM1Fault())
-        {
-            Serial.println(F("PANIC: Motor M1 fault!"));
-        }
-        if (md.getM2Fault())
-        {
-            Serial.println(F("PANIC: Motor M2 fault!"));
-        }
-        m1_speed = 0;
-        m2_speed = 0;
-        // Rate limit messages
-        delay(100);
-        return;
-    }
 
     /*
     for (uint8_t i=0; i < pulse_inputs_len; i++)
@@ -107,60 +84,52 @@ void MotorPID::run(uint32_t now)
     pulse_inputs[1].pulses = 0;
     pulse_inputs[0].new_data = false;
     pulse_inputs[1].new_data = false;
-    // PONDER: measuere motor current ? md.getM2CurrentMilliamps()
-    // Do something...
 }
 
 void MotorPID::setSpeeds(int16_t m1value, int16_t m2value)
 {
-    if (faulted)
-    {
-        Serial.println(0x15); // NACK
-        return;
-    }
-
-    // M1 is reversed
     m1_speed = -m1value;
     m2_speed = m2value;
 
-    md.setSpeeds(m1_speed, m2_speed);
+    // TODO: rewrite as register addressing
+    if (m1_speed == 0)
+    {
+        digitalWrite(M1_DIR_PIN, 0);
+        analogWrite(M1_PWM_PIN, 0);
+    }
+    else
+    {
+        if (m1_speed < 0)
+        {
+            digitalWrite(M1_DIR_PIN, 1);
+            analogWrite(M1_PWM_PIN, 255 + m1_speed);
+        }
+        else
+        {
+            digitalWrite(M1_DIR_PIN, 0);
+            analogWrite(M1_PWM_PIN, m1_speed);
+        }
+    }
+    if (m2_speed == 0)
+    {
+        digitalWrite(M2_DIR_PIN, 0);
+        analogWrite(M2_PWM_PIN, 0);
+    }
+    else
+    {
+        if (m2_speed < 0)
+        {
+            digitalWrite(M2_DIR_PIN, 1);
+            analogWrite(M2_PWM_PIN, 255 + m2_speed);
+        }
+        else
+        {
+            digitalWrite(M2_DIR_PIN, 0);
+            analogWrite(M2_PWM_PIN, m2_speed);
+        }
+    }
 
     Serial.println(0x6); // ACK
-}
-
-void MotorPID::setBrakes(int16_t m1value, int16_t m2value)
-{
-    if (faulted)
-    {
-        Serial.println(0x15); // NACK
-        return;
-    }
-    // The the speed targets to 0
-    m1_speed = 0;
-    m2_speed = 0;
-    md.setBrakes(m1value, m2value);
-    Serial.println(0x6); // ACK
-}
-
-void MotorPID::set1Brake(uint8_t mnum, int16_t bvalue)
-{
-    if (mnum == 1)
-    {
-        // The the speed target to 0
-        m1_speed = 0;
-        md.setM1Brake(bvalue);
-        Serial.println(0x6); // ACK
-        return;
-    }
-    if (mnum == 2)
-    {
-        // The the speed target to 0
-        m2_speed = 0;
-        md.setM2Brake(bvalue);
-        Serial.println(0x6); // ACK
-        return;
-    }
-    Serial.println(0x15); // NACK
 }
 
 

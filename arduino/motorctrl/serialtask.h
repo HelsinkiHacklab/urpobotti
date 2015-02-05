@@ -102,17 +102,6 @@ void SerialReader::process_command()
         motorctrl.setSpeeds(m1value, m2value);
         return;
     }
-    if (sscanf(parsebuffer, "BRKS:%d,%d", &m1value, &m2value) == 2)
-    {
-        // TODO: Use the motorctrl to set brakes
-        motorctrl.setBrakes(m1value, m2value);
-        return;
-    }
-    if (sscanf(parsebuffer, "BRK1:%d,%d", &m1value, &m2value) == 2)
-    {
-        motorctrl.set1Brake(m1value, m2value);
-        return;
-    }
 
     // Do we have other command to parse ?
 
