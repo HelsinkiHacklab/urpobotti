@@ -57,6 +57,7 @@ class myserver(zmqdecorators.service):
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
     def pingreport(self, sensor, distance):
         #print("DEBUG: reported ping: %s,%s" % (sensor, distance))
+        pass
 
     def cleanup(self):
         print("Cleanup called")

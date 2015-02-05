@@ -57,6 +57,7 @@ class myserver(zmqdecorators.service):
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
     def ppsreport(self, rpps, lpps):
         #print("DEBUG: reported PPS: %s,%s" % (rpps, lpps))
+        pass
 
     def cleanup(self):
         print("Cleanup called")
