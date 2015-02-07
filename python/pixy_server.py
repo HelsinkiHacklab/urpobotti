@@ -32,12 +32,15 @@ class myserver(zmqdecorators.service):
         self.pcb.start()
 
     def check_pixy_blocks_are_new(self):
-        if pixy_blocks_are_new():
-            self.get_and_report_blocks()
+        #if pixy_blocks_are_new():
+        #    self.get_and_report_blocks()
+        self.get_and_report_blocks()
 
     def get_and_report_blocks(self):
         count = pixy_get_blocks(1, BLOCKS)
-        if BLOCKS.type == TYPE_COLOR_CODE:
+        if count < 1:
+            return
+        if BLOCKS.type == 0: #TYPE_NORMAL:
             self.block("%d" % BLOCKS.signature,
                 "%3d" % BLOCKS.x,
                 "%3d" % BLOCKS.y,
@@ -45,8 +48,8 @@ class myserver(zmqdecorators.service):
                 "%3d" % BLOCKS.height
                 )
             pass
-        if BLOCKS.type == TYPE_NORMAL:
-            self.block("%d" % BLOCKS.signature,
+        if BLOCKS.type == 1: #TYPE_COLOR_CODE:
+            self.ccblock("%d" % BLOCKS.signature,
                 "%3d" % BLOCKS.x,
                 "%3d" % BLOCKS.y,
                 "%3d" % BLOCKS.width,
@@ -70,15 +73,6 @@ class myserver(zmqdecorators.service):
         pixy_init()
         # And start the eventloop
         return super(myserver, self).run()
-
-# Wait for blocks #
-while 1:
-
-  count = pixy_get_blocks(1, blocks)
-
-  if count > 0:
-    # Blocks found #
-    print '[BLOCK_TYPE=%d SIG=%d X=%3d Y=%3d WIDTH=%3d HEIGHT=%3d ANGLE=%3d]' % (blocks.type, blocks.signature, blocks.x, blocks.y, blocks.width, blocks.height, blocks.angle)
 
 
 if __name__ == "__main__":
