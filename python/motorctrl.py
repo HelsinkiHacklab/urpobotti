@@ -13,8 +13,8 @@ class myserver(zmqdecorators.service):
     def __init__(self, service_name, service_port, serialport):
         super(myserver, self).__init__(service_name, service_port)
         self.serial_port = serialport
-#        self.input_buffer = ""
-#        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
+        self.input_buffer = ""
+        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
 
     @zmqdecorators.method()
     def setspeeds(self, resp, m1speed, m2speed):
