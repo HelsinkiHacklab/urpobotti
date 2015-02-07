@@ -1,28 +1,34 @@
-from pixy import *
-from ctypes import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#from pixy import *
+#from ctypes import *
+import ctypes
+import pixy
 
 # Pixy Python SWIG get blocks example #
 
 print ("Pixy Python SWIG Example -- Get Blocks")
 
 # Initialize Pixy Interpreter thread #
-pixy_init()
+pixy.pixy_init()
 
-class Blocks (Structure):
-  _fields_ = [ ("type", c_uint),
-               ("signature", c_uint),
-               ("x", c_uint),
-               ("y", c_uint),
-               ("width", c_uint),
-               ("height", c_uint),
-               ("angle", c_uint) ]
+class Blocks (ctypes.Structure):
+  _fields_ = [ ("type", ctypes.c_uint),
+               ("signature", ctypes.c_uint),
+               ("x", ctypes.c_uint),
+               ("y", ctypes.c_uint),
+               ("width", ctypes.c_uint),
+               ("height", ctypes.c_uint),
+               ("angle", ctypes.c_uint) ]
 
-blocks = Block()
+blocks = pixy.Block()
+
+print("Going loopy")
 
 # Wait for blocks #
 while 1:
 
-  count = pixy_get_blocks(1, blocks)
+  count = pixy.pixy_get_blocks(1, blocks)
 
   if count > 0:
     # Blocks found #
