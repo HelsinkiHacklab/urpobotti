@@ -13,10 +13,14 @@ class myserver(zmqdecorators.service):
     def __init__(self, service_name, service_port, serialport):
         super(myserver, self).__init__(service_name, service_port)
         self.serial_port = serialport
-        self.input_buffer = ""
-        # TODO: start serial reader thread and give out the pulses as signals
+#        self.input_buffer = ""
+#        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
 
-        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
+    @zmqdecorators.method()
+    def setspeeds(self, resp, m1speed, m2speed):
+        self.serial_port.write("SPDS:%d,%d\n" % (int(m1speed), int(m2speed)))
+        # TODO: actually handle ACK/NACK somehow (we need to read it from the serialport but we can't block while waiting for it...)
+        resp.send("ACK")
 
     def handle_serial_event(self, fd, events):
         # Copied from arbus that was thread based
@@ -46,7 +50,8 @@ class myserver(zmqdecorators.service):
             #!PPS:0,0
             if (message[:5] == '!PPS:'):
                 (rpps, lpps) = message[5:].split(',')
-                self.ppsreport(rpps, lpps)
+                #self.ppsreport(rpps, lpps)
+                pass
 
         except Exception,e:
             print "message_received: Got exception %s" % e
@@ -54,19 +59,14 @@ class myserver(zmqdecorators.service):
             pass
         pass
 
-    @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
-    def ppsreport(self, rpps, lpps):
-        #print("DEBUG: reported PPS: %s,%s" % (rpps, lpps))
-        pass
+#    @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
+#    def ppsreport(self, rpps, lpps):
+#        #print("DEBUG: reported PPS: %s,%s" % (rpps, lpps))
+#        pass
 
     def cleanup(self):
         print("Cleanup called")
 
-    @zmqdecorators.method()
-    def setspeeds(self, resp, m1speed, m2speed):
-        self.port.write("SPDS:%d,%d\n" % (int(m1speed), int(m2speed)))
-        # TODO: actually handle ACK/NACK somehow (we need to read it from the serialport but we can't block while waiting for it...)
-        resp.send("ACK")
 
 
 
