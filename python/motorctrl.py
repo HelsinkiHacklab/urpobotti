@@ -50,7 +50,8 @@ class myserver(zmqdecorators.service):
             #!PPS:0,0
             if (message[:5] == '!PPS:'):
                 (rpps, lpps) = message[5:].split(',')
-                #self.ppsreport(rpps, lpps)
+                # These are already strings, no need to cast
+                self.ppsreport(rpps, lpps)
                 pass
 
         except Exception,e:
