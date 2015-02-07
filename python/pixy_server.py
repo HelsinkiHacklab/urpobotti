@@ -1,35 +1,88 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#from pixy import *
-#from ctypes import *
-import ctypes
-import pixy
+import zmq
+from zmq.eventloop import ioloop as ioloop_mod
+import zmqdecorators
 
-# Pixy Python SWIG get blocks example #
+SERVICE_NAME = "urpobot.pixyblocks"
+SERVICE_PORT = 7579
+SIGNALS_PORT = 7580
 
-print ("Pixy Python SWIG Example -- Get Blocks")
+from pixy import *
+from ctypes import *
 
-# Initialize Pixy Interpreter thread #
-pixy.pixy_init()
+# I have no idea what this is for, it's from the pixy get_blocks.py example
+class Blocks (Structure):
+  _fields_ = [ ("type", c_uint),
+               ("signature", c_uint),
+               ("x", c_uint),
+               ("y", c_uint),
+               ("width", c_uint),
+               ("height", c_uint),
+               ("angle", c_uint) ]
 
-class Blocks (ctypes.Structure):
-  _fields_ = [ ("type", ctypes.c_uint),
-               ("signature", ctypes.c_uint),
-               ("x", ctypes.c_uint),
-               ("y", ctypes.c_uint),
-               ("width", ctypes.c_uint),
-               ("height", ctypes.c_uint),
-               ("angle", ctypes.c_uint) ]
+BLOCKS = Block()
 
-blocks = pixy.Block()
+class myserver(zmqdecorators.service):
+    def __init__(self, service_name, service_port):
+        super(myserver, self).__init__(service_name, service_port)
 
-print("Going loopy")
+
+        self.pcb = ioloop_mod.PeriodicCallback(self.check_pixy_blocks_are_new, 20)
+        self.pcb.start()
+
+    def check_pixy_blocks_are_new(self):
+        if pixy_blocks_are_new():
+            self.get_and_report_blocks()
+
+    def get_and_report_blocks(self):
+        count = pixy_get_blocks(1, BLOCKS)
+        if BLOCKS.type == TYPE_COLOR_CODE:
+            self.block("%d" % BLOCKS.signature,
+                "%3d" % BLOCKS.x,
+                "%3d" % BLOCKS.y,
+                "%3d" % BLOCKS.width,
+                "%3d" % BLOCKS.height
+                )
+            pass
+        if BLOCKS.type == TYPE_NORMAL:
+            self.block("%d" % BLOCKS.signature,
+                "%3d" % BLOCKS.x,
+                "%3d" % BLOCKS.y,
+                "%3d" % BLOCKS.width,
+                "%3d" % BLOCKS.height,
+                "%3d" % BLOCKS.angle
+                )
+            pass
+
+    @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
+    def block(self, sig, x, y, w, h):
+        print("DEBUG: reported normal block: sig=%s, x=%s, y=%s, w=%s h=%s" % (sig, x, y, w, h))
+        pass
+
+    @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
+    def ccblock(self, sig, x, y, w, h, angle):
+        print("DEBUG: reported CC block: sig=%s, x=%s, y=%s, w=%s h=%s, ang=%s" % (sig, x, y, w, h, angle))
+        pass
+
+    def run(self):
+        # Initialize Pixy Interpreter thread #
+        pixy_init()
+        # And start the eventloop
+        return super(myserver, self).run()
 
 # Wait for blocks #
 while 1:
 
-  count = pixy.pixy_get_blocks(1, blocks)
+  count = pixy_get_blocks(1, blocks)
 
   if count > 0:
     # Blocks found #
     print '[BLOCK_TYPE=%d SIG=%d X=%3d Y=%3d WIDTH=%3d HEIGHT=%3d ANGLE=%3d]' % (blocks.type, blocks.signature, blocks.x, blocks.y, blocks.width, blocks.height, blocks.angle)
+
+
+if __name__ == "__main__":
+    import sys,os
+    instance = myserver(SERVICE_NAME, SERVICE_PORT)
+    print("Starting")
+    instance.run()
