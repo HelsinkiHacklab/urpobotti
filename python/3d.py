@@ -90,7 +90,7 @@ def DrawGLScene():
 		msg = pinger.recv_multipart()
 
 		if msg[0] == 'pingreport':
-			distance = int(msg[2])
+			distance = float(msg[2])
 			distances[int(msg[1])] = distance
 
 	if encoder in socks and socks[encoder] == zmq.POLLIN:
