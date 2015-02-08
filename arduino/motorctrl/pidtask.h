@@ -53,6 +53,8 @@ bool MotorPID::canRun(uint32_t now)
 void MotorPID::run(uint32_t now)
 {
     last_run = now;
+    // I know we never get over 80 with these motors and sensors, int8_t is 0-127
+    int8_t pulsereport;
 
     /*
     for (uint8_t i=0; i < pulse_inputs_len; i++)
@@ -76,9 +78,20 @@ void MotorPID::run(uint32_t now)
     */
 
     Serial.print(F("!PPS:"));
-    Serial.print(pulse_inputs[0].pulses*(1000/PPS_SAMPLE_TIME), DEC);
+    pulsereport = pulse_inputs[0].pulses*(1000/PPS_SAMPLE_TIME);
+    // M1 is reversed
+    if (m1_speed > 0)
+    {
+        pulsereport = -pulsereport;
+    }
+    Serial.print(pulsereport, DEC);
     Serial.print(F(","));
-    Serial.println(pulse_inputs[1].pulses*(1000/PPS_SAMPLE_TIME), DEC);
+    pulsereport = pulse_inputs[1].pulses*(1000/PPS_SAMPLE_TIME);
+    if (m2_speed < 0)
+    {
+        pulsereport = -pulsereport;
+    }
+    Serial.println(pulsereport, DEC);
 
     pulse_inputs[0].pulses = 0;
     pulse_inputs[1].pulses = 0;
