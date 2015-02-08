@@ -8,7 +8,7 @@
 #define PING_INTERVAL 35 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
 unsigned long pingTimer[SONAR_NUM]; // Holds the times when the next ping should happen for each sensor.
-unsigned int cm[SONAR_NUM];         // Where the ping distances are stored.
+float cm[SONAR_NUM];         // Where the ping distances are stored.
 uint8_t currentSensor = 0;          // Keeps track of which sensor is active.
 
 NewPing sonar[SONAR_NUM] = {     // Sensor object array.
@@ -49,7 +49,7 @@ void echoCheck() // If ping received, set the sensor distance to array. This is 
 {
   if (sonar[currentSensor].check_timer())
   {
-    cm[currentSensor] = sonar[currentSensor].ping_result / US_ROUNDTRIP_CM;
+    cm[currentSensor] = (float)sonar[currentSensor].ping_result / US_ROUNDTRIP_CM;
   }
 }
 
