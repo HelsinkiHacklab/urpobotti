@@ -1,3 +1,3 @@
 #!/bin/bash
 source ~/.virtualenvs/urpobotti/bin/activate
-./pinger.py /dev/ttyUSB0
+./bin/pinger.py /dev/ttyUSB0
