@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import hid
+import hid # tested with hidapi==0.7.99-5
 import zmq
 import time
 
