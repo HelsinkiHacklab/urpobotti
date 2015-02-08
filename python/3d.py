@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import string
 from OpenGL.GL import *
 from OpenGL.GLUT import *

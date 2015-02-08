@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import zmq
 import time
 
@@ -100,7 +102,7 @@ while True:
 	
 	if msg != prev: # lazy way to check if we should send an update =D
 		prev = msg
-#		motor.send_multipart(msg)
+		motor.send_multipart(msg)
 #		print int(left_motor), int(right_motor), distances
 
 	

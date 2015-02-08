@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import hid
 import zmq
 import time
