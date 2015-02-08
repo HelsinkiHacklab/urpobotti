@@ -67,11 +67,11 @@ while True:
 		msg = pinger.recv_multipart()
 
 		if msg[0] == 'pingreport':
-			distance = int(msg[2])
+			distance = float(msg[2])
 			if msg[2] == '0':
-				distance == 255
-			if distance > 50:
-				distance = 255
+				distance == 255.0
+			if distance > 50.0:
+				distance = 255.0
 			distances[int(msg[1])] = distance
 
 	if imu in socks and socks[imu] == zmq.POLLIN:
