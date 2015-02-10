@@ -1,4 +1,6 @@
-import hid
+#!/usr/bin/env python
+
+import hid # tested with hidapi==0.7.99-5
 import zmq
 import time
 
@@ -38,8 +40,11 @@ mode = 0
 prev = ""
 while True:
 	values = tuple(d.read(25)) # 25 bytes from PS4 controller
-	
-	print(' '.join("%d:%%2x"%x for x in range(25)) % values)
+
+	if values[0] != 1: # Only ReportID 1 is parsed
+		continue
+
+#	print(' '.join("%d:%%2x"%x for x in range(25)) % values)
 	left_x = deadzone(map(values[1], 0.0, 255.0, -1.0, 1.0))
 	left_y = deadzone(map(values[2], 0.0, 255.0, -1.0, 1.0))
 	right_x = deadzone(map(values[3], 0.0, 255.0, -1.0, 1.0))

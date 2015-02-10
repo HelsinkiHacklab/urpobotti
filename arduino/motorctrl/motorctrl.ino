@@ -1,4 +1,4 @@
-// Motor controller and AHRS for Urpobotti
+// Motor controller for Urpobotti
 
 // Get this library from http://bleaklow.com/files/2010/Task.tar.gz (and fix WProgram.h -> Arduino.h)
 // and read http://bleaklow.com/2010/07/20/a_very_simple_arduino_task_manager.html for background and instructions
@@ -8,12 +8,6 @@
 
 // Pin change interrupt lib https://github.com/rambo/PinChangeInt_userData
 #include "PinChangeInt_userData.h"
-
-
-// Motor shield https://www.pololu.com/product/2502
-#include "DualVNH5019MotorShield.h"
-DualVNH5019MotorShield md;
-// Reminder: speeds go from -400 to +400
 
 // To hold data for reach motor encoder
 typedef struct {
