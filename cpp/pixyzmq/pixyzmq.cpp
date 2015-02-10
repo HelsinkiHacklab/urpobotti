@@ -214,8 +214,10 @@ int main(int argc, char * argv[])
         {
             case 0: // Normal
             {
+                /*
                 blocks[index].print(buf);
                 printf("Sending NORM: %s\n", buf);
+                */
 
                 // Topic
                 err = str_to_msg("NORM", &msgpart);
@@ -257,15 +259,16 @@ int main(int argc, char * argv[])
                     break;
                 }
 
-                printf("Done\n");
+                //printf("Done\n");
 
                 break;
             }
             case 1: // ColorCode
             {
-
+                /*
                 blocks[index].print(buf);
                 printf("Sending CC: %s\n", buf);
+                */
 
                 // Topic
                 err = str_to_msg("CC", &msgpart);
@@ -325,7 +328,7 @@ int main(int argc, char * argv[])
                     break;
                 }
                 
-                printf("Done\n");
+                //printf("Done\n");
 
 
                 break;
@@ -334,6 +337,7 @@ int main(int argc, char * argv[])
     }
     i++;
   }
+  printf("Exiting\n");
   pixy_close();
 
 
