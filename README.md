@@ -6,6 +6,15 @@ Robot for HSF15 compo
 
   - Lots of things but streaming Pixy image data would be cool http://www.cmucam.org/boards/9/topics/5106?r=5162
 
+## ZMQ ports
+
+  - 7574: IMU data publisher 
+  - 7575: Motorcontroller RPC
+  - 7576: Motorcontroller data publisher
+  - 7577: Pinger RPC
+  - 7578: Pinger data publisher
+  - 7579: Pixy RPC
+  - 7580: Pixy data publisher
 
 # Compiling/installing things
 
