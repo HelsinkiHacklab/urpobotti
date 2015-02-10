@@ -51,6 +51,38 @@ int str_to_msg(char* send, zmq_msg_t* msg)
     return 0;
 }
 
+int send_int_as_hex(uint16_t send, void* publisher, bool more)
+{
+    char buf[8];
+    int err;
+    zmq_msg_t msg;
+
+    err = sprintf(buf, "0x%04x", send);
+    if (err < 0)
+    {
+        return -1;
+    }
+    err = str_to_msg(buf, &msg);
+    if (err != 0)
+    {
+        zmq_msg_close(&msg);
+        return err;
+    }
+    if (more)
+    {
+        err = zmq_send(publisher, &msg, ZMQ_SNDMORE);
+    }
+    else
+    {
+        err = zmq_send(publisher, &msg, 0);
+    }
+    zmq_msg_close(&msg);
+    if (err != 0)
+    {
+        return err;
+    }
+    return 0;
+}
 
 int main(int argc, char * argv[])
 {
@@ -176,17 +208,112 @@ int main(int argc, char * argv[])
     // Display received blocks //
     for(index = 0; index != blocks_copied; ++index)
     {
-        blocks[index].print(buf);
+        //blocks[index].print(buf);
         switch (blocks[index].type)
         {
             case 0: // Normal
             {
-                printf("normal frame %d: %s", i, buf);
+                // Topic
+                err = str_to_msg("NORM", &msgpart);
+                if (err != 0)
+                {
+                    zmq_msg_close(&msgpart);
+                    break;
+                }                
+                err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+                zmq_msg_close(&msgpart);
+                if (err != 0)
+                {
+                    break;
+                }
+
+                err = send_int_as_hex(blocks[index].signature, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+                err = send_int_as_hex(blocks[index].x, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+                err = send_int_as_hex(blocks[index].y, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+                err = send_int_as_hex(blocks[index].width, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+                err = send_int_as_hex(blocks[index].height, &publisher, false);
+                if (err != 0)
+                {
+                    break;
+                }
                 break;
             }
             case 1: // ColorCode
             {
-                printf("CC frame %d: %s", i, buf);
+                // Topic
+                err = str_to_msg("CC", &msgpart);
+                if (err != 0)
+                {
+                    zmq_msg_close(&msgpart);
+                    break;
+                }                
+                err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+                zmq_msg_close(&msgpart);
+                if (err != 0)
+                {
+                    break;
+                }
+
+                err = send_int_as_hex(blocks[index].signature, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+                err = send_int_as_hex(blocks[index].x, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+                err = send_int_as_hex(blocks[index].y, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+                err = send_int_as_hex(blocks[index].width, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+                err = send_int_as_hex(blocks[index].height, &publisher, true);
+                if (err != 0)
+                {
+                    break;
+                }
+
+                err = sprintf(buf, "%d", blocks[index].angle);
+                if (err < 0)
+                {
+                    break;
+                }
+                err = str_to_msg(buf, &msgpart);
+                if (err != 0)
+                {
+                    zmq_msg_close(&msgpart);
+                    break;
+                }                
+                err = zmq_send(publisher, &msgpart, 0);
+                zmq_msg_close(&msgpart);
+                if (err != 0)
+                {
+                    break;
+                }
+
                 break;
             }
         }
