@@ -60,6 +60,7 @@ int send_int_as_hex(uint16_t send, void* publisher, bool more)
     err = sprintf(buf, "0x%04x", send);
     if (err < 0)
     {
+        printf("ERROR: Failed to format message\n");
         return -1;
     }
     err = str_to_msg(buf, &msg);
@@ -79,6 +80,7 @@ int send_int_as_hex(uint16_t send, void* publisher, bool more)
     zmq_msg_close(&msg);
     if (err != 0)
     {
+        printf("ERROR: zmq_send failed with %s\n", zmq_strerror(zmq_errno()));
         return err;
     }
     return 0;
@@ -208,11 +210,13 @@ int main(int argc, char * argv[])
     // Display received blocks //
     for(index = 0; index != blocks_copied; ++index)
     {
-        //blocks[index].print(buf);
         switch (blocks[index].type)
         {
             case 0: // Normal
             {
+                blocks[index].print(buf);
+                printf("Sending NORM: %s\n", buf);
+
                 // Topic
                 err = str_to_msg("NORM", &msgpart);
                 if (err != 0)
@@ -227,35 +231,42 @@ int main(int argc, char * argv[])
                     break;
                 }
 
-                err = send_int_as_hex(blocks[index].signature, &publisher, true);
+                err = send_int_as_hex(blocks[index].signature, publisher, true);
                 if (err != 0)
                 {
                     break;
                 }
-                err = send_int_as_hex(blocks[index].x, &publisher, true);
+                err = send_int_as_hex(blocks[index].x, publisher, true);
                 if (err != 0)
                 {
                     break;
                 }
-                err = send_int_as_hex(blocks[index].y, &publisher, true);
+                err = send_int_as_hex(blocks[index].y, publisher, true);
                 if (err != 0)
                 {
                     break;
                 }
-                err = send_int_as_hex(blocks[index].width, &publisher, true);
+                err = send_int_as_hex(blocks[index].width, publisher, true);
                 if (err != 0)
                 {
                     break;
                 }
-                err = send_int_as_hex(blocks[index].height, &publisher, false);
+                err = send_int_as_hex(blocks[index].height, publisher, false);
                 if (err != 0)
                 {
                     break;
                 }
+
+                printf("Done\n");
+
                 break;
             }
             case 1: // ColorCode
             {
+
+                blocks[index].print(buf);
+                printf("Sending CC: %s\n", buf);
+
                 // Topic
                 err = str_to_msg("CC", &msgpart);
                 if (err != 0)
@@ -270,27 +281,27 @@ int main(int argc, char * argv[])
                     break;
                 }
 
-                err = send_int_as_hex(blocks[index].signature, &publisher, true);
+                err = send_int_as_hex(blocks[index].signature, publisher, true);
                 if (err != 0)
                 {
                     break;
                 }
-                err = send_int_as_hex(blocks[index].x, &publisher, true);
+                err = send_int_as_hex(blocks[index].x, publisher, true);
                 if (err != 0)
                 {
                     break;
                 }
-                err = send_int_as_hex(blocks[index].y, &publisher, true);
+                err = send_int_as_hex(blocks[index].y, publisher, true);
                 if (err != 0)
                 {
                     break;
                 }
-                err = send_int_as_hex(blocks[index].width, &publisher, true);
+                err = send_int_as_hex(blocks[index].width, publisher, true);
                 if (err != 0)
                 {
                     break;
                 }
-                err = send_int_as_hex(blocks[index].height, &publisher, true);
+                err = send_int_as_hex(blocks[index].height, publisher, true);
                 if (err != 0)
                 {
                     break;
@@ -313,6 +324,9 @@ int main(int argc, char * argv[])
                 {
                     break;
                 }
+                
+                printf("Done\n");
+
 
                 break;
             }
