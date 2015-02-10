@@ -25,13 +25,22 @@
 #include "RTIMULib.h"
 #include "zmq.h"
 
-char* axis[3] = {
+char* axis[12] = {
 	"roll", 
 	"pitch",
-	"yaw"
+	"yaw",
+	"compass_x",
+	"compass_y",
+	"compass_z",
+	"gyro_x",
+	"gyro_y",
+	"gyro_z",
+	"accel_x",
+	"accel_y",
+	"accel_z"
 };
 
-int zmq_publish_value(void* publisher, char* axis, char* value);
+int zmq_publish_IMU(void* publisher, RTIMU_DATA &imuData);
 
 int main()
 {
@@ -40,12 +49,6 @@ int main()
 	void* context = zmq_init(1);
 	void* publisher = zmq_socket(context, ZMQ_PUB);
 	char value[20];
-
-	//IMU variables
-    int sampleCount = 0;
-    uint64_t publishTimer;
-    uint64_t now;
-
 
 	// Prepare ZMQ context and publisher
 	err = zmq_bind(publisher, ZMQ_PORT);
@@ -65,50 +68,20 @@ int main()
     }
     imu->IMUInit();
 
-	float mean_x = 0, mean_y = 0, mean_z = 0;
-	int i;
-	publishTimer = 0;
+    RTIMU_DATA imuData;
     //  process and publish data
+	int i=0;
     while (1) {
-        //  poll at the rate recommended by the IMU
         usleep(imu->IMUGetPollInterval() * 1000);
-
-        while (imu->IMURead()) {
-            RTIMU_DATA imuData = imu->getIMUData();
-			mean_x += imuData.fusionPose.x();
-			mean_y += imuData.fusionPose.y();
-			mean_z += imuData.fusionPose.z();
-            sampleCount++;
-
-            now = RTMath::currentUSecsSinceEpoch();
-            //  publish 10 times per second
-            if ((now - publishTimer) > 100000) {
-				mean_x /= sampleCount;
-				mean_y /= sampleCount;
-				mean_z /= sampleCount;
-
-				sprintf(value, "%f", mean_x);
-				zmq_publish_value(publisher, axis[0], value);
-				sprintf(value, "%f", mean_y);
-				zmq_publish_value(publisher, axis[1], value);
-				sprintf(value, "%f", mean_z);
-				zmq_publish_value(publisher, axis[2], value);
-
-				sampleCount = 0;
-				mean_x = 0;
-				mean_y = 0;
-				mean_z = 0;
-/*
-				sprintf(value, "%f", imuData.fusionPose.x());
-				zmq_publish_value(publisher, axis[0], value);
-				sprintf(value, "%f", imuData.fusionPose.y());
-				zmq_publish_value(publisher, axis[1], value);
-				sprintf(value, "%f", imuData.fusionPose.z());
-				zmq_publish_value(publisher, axis[2], value);
-*/
-                publishTimer = now;
-            }
-        }
+		imu->IMURead();
+		if(i++<10){
+			continue;
+		}else{
+			i=0;	
+        	//  poll at the rate recommended by the IMU
+        	RTIMU_DATA imuData = imu->getIMUData();
+			zmq_publish_IMU(publisher, imuData);
+		}
     }
 }
 
@@ -125,12 +98,12 @@ int str_to_msg(char* send, zmq_msg_t* msg)
     return 0;
 }
 
-int zmq_publish_value(void* publisher, char* axis, char* value)
+int zmq_publish_IMU(void* publisher, RTIMU_DATA &imuData)
 {
     int err;
     zmq_msg_t msgpart;
     // use the axis as topic
-    err = str_to_msg(axis, &msgpart);
+    err = str_to_msg("IMU", &msgpart);
     if (err != 0){
         zmq_msg_close(&msgpart);
         return err;
@@ -142,17 +115,51 @@ int zmq_publish_value(void* publisher, char* axis, char* value)
         return err;
     }
 
-    // send value as the message
+	char value[64];
+	sprintf(value, "%f", imuData.compass.x());
     err = str_to_msg(value, &msgpart);
-    if (err != 0){
-        zmq_msg_close(&msgpart);
-        return err;
-    }
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+	
+	sprintf(value, "%f", imuData.compass.y());
+    err = str_to_msg(value, &msgpart);
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+	
+	sprintf(value, "%f", imuData.compass.z());
+    err = str_to_msg(value, &msgpart);
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+	
+	sprintf(value, "%f", imuData.gyro.x());
+    err = str_to_msg(value, &msgpart);
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+	
+	sprintf(value, "%f", imuData.gyro.y());
+    err = str_to_msg(value, &msgpart);
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+	
+	sprintf(value, "%f", imuData.gyro.z());
+    err = str_to_msg(value, &msgpart);
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+	
+	sprintf(value, "%f", imuData.accel.x());
+    err = str_to_msg(value, &msgpart);
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+	
+	sprintf(value, "%f", imuData.accel.y());
+    err = str_to_msg(value, &msgpart);
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+	
+	sprintf(value, "%f", imuData.accel.z());
+    err = str_to_msg(value, &msgpart);
     err = zmq_send(publisher, &msgpart, 0);
     zmq_msg_close(&msgpart);
-    if (err != 0){
-        printf("ERROR: zmq_send failed with %s\n", zmq_strerror(zmq_errno()));
-        return err;
-    }
+		
     return 0;
 }
