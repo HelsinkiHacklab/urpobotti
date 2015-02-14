@@ -265,6 +265,42 @@ int main(int argc, char * argv[])
       continue;
     }
 
+    err = str_to_msg("FRAME", &msgpart);
+    if (err != 0)
+    {
+        zmq_msg_close(&msgpart);
+        // TODO: Log errors
+        continue;
+    }                
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+    if (err != 0)
+    {
+        // TODO: Log errors
+        continue;
+    }
+    err = str_to_msg("START", &msgpart);
+    if (err != 0)
+    {
+        zmq_msg_close(&msgpart);
+        // TODO: Log errors
+        continue;
+    }                
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+    if (err != 0)
+    {
+        // TODO: Log errors
+        continue;
+    }
+    err = send_int_as_hex(i, publisher, false);
+    if (err != 0)
+    {
+        // TODO: Log errors
+        continue;
+    }
+
+
     // Display received blocks //
     for(index = 0; index != blocks_copied; ++index)
     {
@@ -393,6 +429,43 @@ int main(int argc, char * argv[])
             }
         }
     }
+
+    err = str_to_msg("FRAME", &msgpart);
+    if (err != 0)
+    {
+        zmq_msg_close(&msgpart);
+        // TODO: Log errors
+        continue;
+    }                
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+    if (err != 0)
+    {
+        // TODO: Log errors
+        continue;
+    }
+    err = str_to_msg("END", &msgpart);
+    if (err != 0)
+    {
+        zmq_msg_close(&msgpart);
+        // TODO: Log errors
+        continue;
+    }                
+    err = zmq_send(publisher, &msgpart, ZMQ_SNDMORE);
+    zmq_msg_close(&msgpart);
+    if (err != 0)
+    {
+        // TODO: Log errors
+        continue;
+    }
+    err = send_int_as_hex(i, publisher, false);
+    if (err != 0)
+    {
+        // TODO: Log errors
+        continue;
+    }
+
+
     i++;
   }
   printf("Exiting\n");
