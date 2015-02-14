@@ -192,64 +192,66 @@ int main(int argc, char * argv[])
   }
 #endif
 
+    // Frame grab variables
+    unsigned char current_frame[72000]; // ~largest possible given current hardware
+    unsigned char *pixels;  //returned pointer to video frame buffer
+    int32_t response, fourcc;
+    int8_t renderflags;
+    int return_value, res;
+    uint16_t width, height;
+    uint32_t  numPixels;
+
+
   printf("Detecting blocks...\n");
   while(run_flag)
   {
 
-    // Make a local context
+/**
+ * Disable for now
+    // Stop block detection for grabbing frame
+    return_value = pixy_command("stop", END_OUT_ARGS, &response, END_IN_ARGS);
+    
+    response = 0;
+    
+    return_value = pixy_command("cam_getFrame",  // String id for remote procedure
+                             0x01, 0x21,      // mode 0 = 1280x800 25 fps
+                             0x02,   0,        // xoffset
+                             0x02,   0,         // yoffset
+                             0x02, 320,       // width
+                             0x02, 200,       // height 
+                             0,              // separator
+                             &response,      // pointer to mem address for return value
+                            &fourcc,         //contrary to docs, the next 5 args are needed
+                            &renderflags,
+                            &width,
+                            &height,
+                            &numPixels,
+                             &pixels,        // pointer to mem address for returned frame
+                             0);
+    printf("getFrame returned %d response %d\n", return_value, response);
+    printf("returned w %d h %d npix %d\n",width,height,numPixels);
+
+    if (return_value == 0)
     {
-        unsigned char current_frame[72000]; // ~largest possible given current hardware
-        unsigned char *pixels;  //returned pointer to video frame buffer
-        int32_t response, fourcc;
-        int8_t renderflags;
-        int return_value, res;
-        uint16_t width, height;
-        uint32_t  numPixels;
-        // Stop block detection for grabbing frame
-        return_value = pixy_command("stop", END_OUT_ARGS, &response, END_IN_ARGS);
-        
-        response = 0;
-        
-        return_value = pixy_command("cam_getFrame",  // String id for remote procedure
-                                 0x01, 0x00,      // mode 0 = 1280x800 25 fps
-                                 0x02,   0,        // xoffset
-                                 0x02,   0,         // yoffset
-                                 0x02, 1280,       // width
-                                 0x02, 40,       // height (56 max @ 1280 w)
-                                 0,              // separator
-                                 &response,      // pointer to mem address for return value
-                                &fourcc,         //contrary to docs, the next 5 args are needed
-                                &renderflags,
-                                &width,
-                                &height,
-                                &numPixels,
-                                 &pixels,        // pointer to mem address for returned frame
-                                 0);
-
-        printf("getFrame returned %d response %d\n", return_value, response);
-        printf("returned w %d h %d npix %d\n",width,height,numPixels);
-        
-
-        if (return_value == 0)
-        {
-            memcpy(&current_frame, pixels,numPixels);
-            // TODO frame
-        }
-        
-        // Restart block detection
-        return_value = pixy_command("run", END_OUT_ARGS, &response, END_IN_ARGS);
-        if (return_value != 0)
-        {
-            printf("ERROR: Restarting block detection failed: return_value %d response %d\n", return_value, response);
-            run_flag = false;
-            continue;
-        }
+        memcpy(&current_frame, pixels,numPixels);
+        // TODO push frame over gst
     }
+    
+    // Restart block detection
+    return_value = pixy_command("run", END_OUT_ARGS, &response, END_IN_ARGS);
+    if (return_value != 0)
+    {
+        printf("ERROR: Restarting block detection failed: return_value %d response %d\n", return_value, response);
+        run_flag = false;
+        continue;
+    }
+*/
 
     // Wait for new blocks to be available //
     if (!pixy_blocks_are_new())
     {
-        sleep(0);
+        // Yield
+        //sleep(0);
         continue;
     }
 
@@ -260,6 +262,7 @@ int main(int argc, char * argv[])
       // Error: pixy_get_blocks //
       printf("pixy_get_blocks(): ");
       pixy_error(blocks_copied);
+      continue;
     }
 
     // Display received blocks //
