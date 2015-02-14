@@ -3,6 +3,7 @@
 import zmq
 from zmq.eventloop import ioloop as ioloop_mod
 import zmqdecorators
+import time
 
 SERVICE_NAME = "urpobot.motor"
 SERVICE_PORT = 7575
@@ -15,11 +16,23 @@ class myserver(zmqdecorators.service):
         self.serial_port = serialport
         self.input_buffer = ""
         self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
+        self.last_command_time = time.time()
+        self.pcb = ioloop_mod.PeriodicCallback(self.check_data_reveived, 100)
+        self.pcb.start()
+
+    def check_data_reveived(self, *args):
+        if (time.time() - self.last_command_time > 0.1):
+            #print("Over 0.1s since last command, stopping motors")
+            self._setspeeds(0,0)
+
+    def _setspeeds(self, m1speed, m2speed):
+        self.serial_port.write("SPDS:%d,%d\n" % (int(m1speed), int(m2speed)))
 
     @zmqdecorators.method()
     def setspeeds(self, resp, m1speed, m2speed):
-        print("Got speeds %s,%s" % (m1speed, m2speed))
-        self.serial_port.write("SPDS:%d,%d\n" % (int(m1speed), int(m2speed)))
+        self.last_command_time = time.time()
+        #print("Got speeds %s,%s" % (m1speed, m2speed))
+        self._setspeeds(m1speed, m2speed)
         # TODO: actually handle ACK/NACK somehow (we need to read it from the serialport but we can't block while waiting for it...)
         resp.send("ACK")
 
