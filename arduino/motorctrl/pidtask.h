@@ -5,10 +5,10 @@
 #include <Task.h>
 
 #define PPS_SAMPLE_TIME 100
-#define M1_DIR_PIN 7
-#define M2_DIR_PIN 8
-#define M1_PWM_PIN 10
-#define M2_PWM_PIN 11
+#define M1_ENABLE_PIN 4
+#define M2_ENABLE_PIN 7
+#define M1_PWM_PIN 5
+#define M2_PWM_PIN 6
 
 // We might actually want use the canrun 
 class MotorPID : public Task
@@ -34,10 +34,11 @@ MotorPID::MotorPID()
     faulted = false;
     m1_speed = 0;
     m2_speed = 0;
-    pinMode(M1_DIR_PIN, OUTPUT);
+    pinMode(M1_ENABLE_PIN, OUTPUT);
     pinMode(M1_PWM_PIN, OUTPUT);
-    pinMode(M2_DIR_PIN, OUTPUT);
+    pinMode(M2_ENABLE_PIN, OUTPUT);
     pinMode(M2_PWM_PIN, OUTPUT);
+    setSpeeds(0,0);
 }
 
 bool MotorPID::canRun(uint32_t now)
@@ -53,93 +54,33 @@ bool MotorPID::canRun(uint32_t now)
 void MotorPID::run(uint32_t now)
 {
     last_run = now;
-    // I know we never get over 80 with these motors and sensors, int8_t is 0-127
-    int8_t pulsereport;
-
-    /*
-    for (uint8_t i=0; i < pulse_inputs_len; i++)
-    {
-        Serial.print(F("DEBUG: pulse_inputs["));
-        Serial.print(i, DEC);
-        Serial.print(F("].pulses="));
-        Serial.print(pulse_inputs[i].pulses, DEC);
-        if (pulse_inputs[i].new_data)
-        {
-            Serial.print(F(" <- NEW"));
-        }
-        Serial.println("");
-    }
-    */
-    /*
-    Serial.print(F("DEBUG: M1 set speed="));
-    Serial.println(m1_speed, DEC);
-    Serial.print(F("DEBUG: M2 set speed="));
-    Serial.println(m2_speed, DEC);
-    */
-
-    Serial.print(F("!PPS:"));
-    pulsereport = pulse_inputs[0].pulses*(1000/PPS_SAMPLE_TIME);
-    // M1 is reversed
-    if (m1_speed > 0)
-    {
-        pulsereport = -pulsereport;
-    }
-    Serial.print(pulsereport, DEC);
-    Serial.print(F(","));
-    pulsereport = pulse_inputs[1].pulses*(1000/PPS_SAMPLE_TIME);
-    if (m2_speed < 0)
-    {
-        pulsereport = -pulsereport;
-    }
-    Serial.println(pulsereport, DEC);
-
-    pulse_inputs[0].pulses = 0;
-    pulse_inputs[1].pulses = 0;
-    pulse_inputs[0].new_data = false;
-    pulse_inputs[1].new_data = false;
 }
 
 void MotorPID::setSpeeds(int16_t m1value, int16_t m2value)
 {
-    m1_speed = -m1value;
+    m1_speed = m1value;
     m2_speed = m2value;
 
     // TODO: rewrite as register addressing
     if (m1_speed == 0)
     {
-        digitalWrite(M1_DIR_PIN, 0);
-        analogWrite(M1_PWM_PIN, 0);
+        digitalWrite(M1_ENABLE_PIN, 0);
+        analogWrite(M1_PWM_PIN, 128);
     }
     else
     {
-        if (m1_speed < 0)
-        {
-            digitalWrite(M1_DIR_PIN, 1);
-            analogWrite(M1_PWM_PIN, 255 + m1_speed);
-        }
-        else
-        {
-            digitalWrite(M1_DIR_PIN, 0);
-            analogWrite(M1_PWM_PIN, m1_speed);
-        }
+        digitalWrite(M1_ENABLE_PIN, 1);
+        analogWrite(M1_PWM_PIN, 128 + m1_speed);
     }
     if (m2_speed == 0)
     {
-        digitalWrite(M2_DIR_PIN, 0);
-        analogWrite(M2_PWM_PIN, 0);
+        digitalWrite(M2_ENABLE_PIN, 0);
+        analogWrite(M2_PWM_PIN, 128);
     }
     else
     {
-        if (m2_speed < 0)
-        {
-            digitalWrite(M2_DIR_PIN, 1);
-            analogWrite(M2_PWM_PIN, 255 + m2_speed);
-        }
-        else
-        {
-            digitalWrite(M2_DIR_PIN, 0);
-            analogWrite(M2_PWM_PIN, m2_speed);
-        }
+        digitalWrite(M2_ENABLE_PIN, 1);
+        analogWrite(M2_PWM_PIN, 128 + m2_speed);
     }
 
     Serial.println(0x6); // ACK
