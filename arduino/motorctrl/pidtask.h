@@ -58,29 +58,29 @@ void MotorPID::run(uint32_t now)
 
 void MotorPID::setSpeeds(int16_t m1value, int16_t m2value)
 {
-    m1_speed = m1value;
-    m2_speed = m2value;
+    m1_speed = constrain(m1value, -127, 127);
+    m2_speed = constrain(m2value, -127, 127);
 
     // TODO: rewrite as register addressing
     if (m1_speed == 0)
     {
         digitalWrite(M1_ENABLE_PIN, 0);
-        analogWrite(M1_PWM_PIN, 128);
+        analogWrite(M1_PWM_PIN, 127);
     }
     else
     {
         digitalWrite(M1_ENABLE_PIN, 1);
-        analogWrite(M1_PWM_PIN, 128 + m1_speed);
+        analogWrite(M1_PWM_PIN, 127 + m1_speed);
     }
     if (m2_speed == 0)
     {
         digitalWrite(M2_ENABLE_PIN, 0);
-        analogWrite(M2_PWM_PIN, 128);
+        analogWrite(M2_PWM_PIN, 127);
     }
     else
     {
         digitalWrite(M2_ENABLE_PIN, 1);
-        analogWrite(M2_PWM_PIN, 128 + m2_speed);
+        analogWrite(M2_PWM_PIN, 127 + m2_speed);
     }
 
     Serial.println(0x6); // ACK
