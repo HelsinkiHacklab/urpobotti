@@ -15,6 +15,7 @@ int16_t m2_speed;
 int16_t m1_measured;
 int16_t m2_measured;
 
+// http://www.microsmart.co.za/technical/2014/03/01/advanced-arduino-adc/
 
 // Define various ADC prescaler
 const unsigned char PS_16 = (1 << ADPS2);
