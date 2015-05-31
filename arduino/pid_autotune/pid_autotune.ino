@@ -219,7 +219,11 @@ void measure_motor2()
 
 byte ATuneModeRemember=2;
 double input=80, output=50, setpoint=180;
-double kp=0.025,ki=0.005,kd=0.025;
+// okish for M1, and M2 it's similar enough
+//double kp=0.025,ki=0.5,kd=0.005;
+
+double kp=0.025,ki=0.5,kd=0.005;
+
 
 double kpmodel=1.5, taup=100, theta[50];
 double outputStart=5;
@@ -298,9 +302,10 @@ void loop()
   if(!useSimulation)
   { //pull the input in from the real world
     //input = analogRead(0);
-    measure_motor1();
-    //measure_motor2();
-    input = m1_measured;
+    //measure_motor1();
+    //input = m1_measured;
+    measure_motor2();
+    input = m2_measured;
   }
   
   if(tuning)
@@ -333,7 +338,8 @@ void loop()
   else
   {
      //analogWrite(0,output); 
-     setSpeeds(output,0);
+     //setSpeeds(output,0);
+     setSpeeds(0,output);
   }
   
   //send-receive with processing if it's time
