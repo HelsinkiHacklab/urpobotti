@@ -4,11 +4,17 @@
 #include <Arduino.h>
 #include <Task.h>
 
-#define PPS_SAMPLE_TIME 100
+#define EMF_SAMPLE_INTERVAL 20 // 20ms -> 50Hz
 #define M1_ENABLE_PIN 4
 #define M2_ENABLE_PIN 7
 #define M1_PWM_PIN 5
 #define M2_PWM_PIN 6
+
+#define M1_FWD_MEAS A2
+#define M1_BWD_MEAS A3
+#define M2_FWD_MEAS A0
+#define M2_BWD_MEAS A1
+
 
 // We might actually want use the canrun 
 class MotorPID : public Task
@@ -44,7 +50,7 @@ MotorPID::MotorPID()
 bool MotorPID::canRun(uint32_t now)
 {
     // Run if 100ms has elapsed
-    if ((now - last_run) >= PPS_SAMPLE_TIME)
+    if ((now - last_run) >= EMF_SAMPLE_INTERVAL)
     {
         return true;
     }

@@ -1,5 +1,5 @@
 
-#define PPS_SAMPLE_TIME 100
+#define EMF_SAMPLE_INTERVAL 20 // 20ms -> 50Hz
 #define M1_ENABLE_PIN 4
 #define M2_ENABLE_PIN 7
 #define M1_PWM_PIN 5
@@ -77,13 +77,16 @@ void measure_motor1()
     int readpin = 0;
     uint8_t hi_idx;
     uint8_t lo_idx;
+    int8_t corr;
 
     if (m1_speed > -1)
     {
+        corr = 1;
         readpin = M1_FWD_MEAS;
     }
     else
     {
+        corr = -1;
         readpin = M1_BWD_MEAS;
     }
     
@@ -126,7 +129,7 @@ void measure_motor1()
         avgtmp += measured[i];
         counts++;
     }
-    m1_measured = avgtmp / counts;
+    m1_measured = (avgtmp / counts) * corr;
     
     Serial.println(F("M1 measurements"));
     print_measured();
@@ -140,13 +143,16 @@ void measure_motor2()
     int readpin = 0;
     uint8_t hi_idx;
     uint8_t lo_idx;
+    int8_t corr;
 
     if (m2_speed > -1)
     {
+        corr = 1;
         readpin = M2_FWD_MEAS;
     }
     else
     {
+        corr = -1;
         readpin = M2_BWD_MEAS;
     }
     
@@ -189,7 +195,7 @@ void measure_motor2()
         avgtmp += measured[i];
         counts++;
     }
-    m2_measured = avgtmp / counts;
+    m2_measured = (avgtmp / counts) * corr;
     
     Serial.println(F("M2 measurements"));
     print_measured();
@@ -238,7 +244,7 @@ void setup()
 unsigned long last_measurement;
 void loop()
 {
-    if ((millis() - last_measurement) > 20)
+    if ((millis() - last_measurement) > EMF_SAMPLE_INTERVAL)
     {
         last_measurement = millis();
         measure_motor1();
