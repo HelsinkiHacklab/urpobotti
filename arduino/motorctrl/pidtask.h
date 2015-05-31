@@ -19,12 +19,12 @@
 #define M2_FWD_MEAS A0
 #define M2_BWD_MEAS A1
 
-#define M1_KP 0.025
-#define M1_KI 0.5
-#define M1_KD 0.005
-#define M2_KP 0.025
-#define M2_KI 0.5
-#define M2_KD 0.005
+#define M1_KP 0.25
+#define M1_KI 1.75
+#define M1_KD 0.0 // Tunign this is hard, hope the compiler optimizes the no-op of calculation with this away
+#define M2_KP 0.25
+#define M2_KI 1.75
+#define M2_KD 0.0 // Tunign this is hard, hope the compiler optimizes the no-op of calculation with this away
 
 int16_t m1_speed;
 int16_t m2_speed;
