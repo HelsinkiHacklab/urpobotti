@@ -272,6 +272,7 @@ void MotorPID::run(uint32_t now)
     M2_PID.Compute();
     setPWMspeeds(m1pid_output, m2pid_output);
 
+    /*
     Serial.print("M1 ");
     Serial.print("setpoint: ");Serial.print(m1_setpoint); Serial.print(" ");
     Serial.print("input: ");Serial.print(m1_measured); Serial.print(" ");
@@ -287,6 +288,13 @@ void MotorPID::run(uint32_t now)
     Serial.print("kp: ");Serial.print(M2_PID.GetKp(), 4);Serial.print(" ");
     Serial.print("ki: ");Serial.print(M2_PID.GetKi(), 4);Serial.print(" ");
     Serial.print("kd: ");Serial.print(M2_PID.GetKd(), 4);Serial.println();
+    */
+    
+    // Report the back-emf based speed back
+    Serial.print(F("!EMF:"));
+    Serial.print(m1_measured, 0);
+    Serial.print(F(","));
+    Serial.println(m2_measured, 0);
 
 }
 

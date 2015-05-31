@@ -62,7 +62,7 @@ class myserver(zmqdecorators.service):
         #print("DEBUG: msg=%s" % message)
         try:
             #!PPS:0,0
-            if (message[:5] == '!PPS:'):
+            if (message[:5] == '!EMF:'):
                 (rpps, lpps) = message[5:].split(',')
                 # These are already strings, no need to cast
                 self.ppsreport(rpps, lpps)
