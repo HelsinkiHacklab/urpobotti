@@ -9,6 +9,9 @@ SERVICE_NAME = "urpobot.motor"
 SERVICE_PORT = 7575
 SIGNALS_PORT = 7576
 
+# How long to wait for new commands before stopping automatically
+COMMAND_GRACE_TIME = 0.250
+
 
 class myserver(zmqdecorators.service):
     def __init__(self, service_name, service_port, serialport):
@@ -21,7 +24,7 @@ class myserver(zmqdecorators.service):
         self.pcb.start()
 
     def check_data_reveived(self, *args):
-        if (time.time() - self.last_command_time > 0.1):
+        if (time.time() - self.last_command_time > COMMAND_GRACE_TIME):
             #print("Over 0.1s since last command, stopping motors")
             self._setspeeds(0,0)
 

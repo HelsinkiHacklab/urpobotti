@@ -79,4 +79,4 @@ while True:
 		client.send_multipart(msg)
 		client.recv()
 
-		#print(str(int(right_motor)), str(int(left_motor)))
+		print(str(int(right_motor)), str(int(left_motor)))

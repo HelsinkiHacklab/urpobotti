@@ -14,5 +14,4 @@ import zmqdecorators
 service_name="urpobot.motor"
 while True:
     resp = zmqdecorators.call_sync(service_name, "setspeeds", sys.argv[1], sys.argv[1])
-    print "got %s" % (repr(resp))
-    time.sleep(0.1)
+    time.sleep(0.01)
