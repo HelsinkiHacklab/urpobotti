@@ -242,12 +242,14 @@ MotorPID::MotorPID()
 {
     // Do we need to contruct something ?
     faulted = false;
-    m1_speed = 0;
-    m2_speed = 0;
     pinMode(M1_ENABLE_PIN, OUTPUT);
     pinMode(M1_PWM_PIN, OUTPUT);
     pinMode(M2_ENABLE_PIN, OUTPUT);
     pinMode(M2_PWM_PIN, OUTPUT);
+
+    M1_PID.SetOutputLimits(-127, 127);
+    M2_PID.SetOutputLimits(-127, 127);
+
     setSpeeds(0,0);
 }
 
@@ -292,6 +294,30 @@ void MotorPID::setSpeeds(int16_t m1value, int16_t m2value)
 {
     m1_setpoint = constrain(m1value, M_MIN, M_MAX);
     m2_setpoint = constrain(m2value, M_MIN, M_MAX);
+
+    if (m1_setpoint == 0)
+    {
+        // Turn PID off and force output to 0
+        M1_PID.SetMode(MANUAL);
+        m1pid_output = 0;
+    }
+    else
+    {
+        // Turn PID on
+        M1_PID.SetMode(AUTOMATIC);
+    }
+        
+    if (m2_setpoint == 0)
+    {
+        // Turn PID off and force output to 0
+        M2_PID.SetMode(MANUAL);
+        m2pid_output = 0;
+    }
+    else
+    {
+        // Turn PID on
+        M2_PID.SetMode(AUTOMATIC);
+    }
 
     Serial.println(0x6); // ACK
 }
