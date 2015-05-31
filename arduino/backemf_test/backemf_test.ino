@@ -1,5 +1,6 @@
 
 #define EMF_SAMPLE_INTERVAL 20 // 20ms -> 50Hz
+#define TEST_TIME 2000 // ms
 #define M1_ENABLE_PIN 4
 #define M2_ENABLE_PIN 7
 #define M1_PWM_PIN 5
@@ -232,7 +233,7 @@ void setup()
     //setSpeeds(0,127);
     //setSpeeds(0,-127);
     //setSpeeds(0,-80);
-    setSpeeds(0,80);
+    //setSpeeds(0,80);
 
     Serial.println(F("Booted"));
 }
@@ -249,5 +250,11 @@ void loop()
         last_measurement = millis();
         measure_motor1();
         measure_motor2();
+    }
+    if (millis() > TEST_TIME)
+    {
+        setSpeeds(0,0);
+        Serial.println(F("Test run complete"));
+        while (true) { delay(1000); }
     }
 }

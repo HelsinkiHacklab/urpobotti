@@ -49,7 +49,6 @@ void setSpeeds(int16_t m1value, int16_t m2value)
         analogWrite(M2_PWM_PIN, 127 + m2_speed);
     }
 
-    Serial.println(0x6); // ACK
 }
 
 
@@ -220,7 +219,7 @@ void measure_motor2()
 
 byte ATuneModeRemember=2;
 double input=80, output=50, setpoint=180;
-double kp=2,ki=0.5,kd=2;
+double kp=0.025,ki=0.005,kd=0.025;
 
 double kpmodel=1.5, taup=100, theta[50];
 double outputStart=5;
@@ -234,7 +233,7 @@ PID myPID(&input, &output, &setpoint,kp,ki,kd, DIRECT);
 PID_ATune aTune(&input, &output);
 
 //set to false to connect to the real world
-boolean useSimulation = true;
+boolean useSimulation = false;
 
 void setup()
 {
@@ -280,9 +279,20 @@ void setup()
 
 }
 
+unsigned long last_measurement;
 void loop()
 {
+  // Limit the control-loop to our back-emf measurement interval
+  if ((millis() - last_measurement) > EMF_SAMPLE_INTERVAL)
+  {
+      last_measurement = millis();
+  }
+  else
+  {
+      return;
+  }
 
+  
   unsigned long now = millis();
 
   if(!useSimulation)
@@ -352,6 +362,11 @@ void changeAutoTune()
     aTune.Cancel();
     tuning = false;
     AutoTuneHelper(false);
+
+    Serial.print("Autotune ");
+    Serial.print("kp: ");Serial.print(aTune.GetKp(), 4);Serial.print(" ");
+    Serial.print("ki: ");Serial.print(aTune.GetKi(), 4);Serial.print(" ");
+    Serial.print("kd: ");Serial.print(aTune.GetKd(), 4);Serial.println();
   }
 }
 
@@ -372,10 +387,15 @@ void SerialSend()
   if(tuning){
     Serial.println("tuning mode");
   } else {
-    Serial.print("kp: ");Serial.print(myPID.GetKp());Serial.print(" ");
-    Serial.print("ki: ");Serial.print(myPID.GetKi());Serial.print(" ");
-    Serial.print("kd: ");Serial.print(myPID.GetKd());Serial.println();
+    Serial.print("kp: ");Serial.print(myPID.GetKp(), 4);Serial.print(" ");
+    Serial.print("ki: ");Serial.print(myPID.GetKi(), 4);Serial.print(" ");
+    Serial.print("kd: ");Serial.print(myPID.GetKd(), 4);Serial.println();
   }
+
+    Serial.print("Autotune ");
+    Serial.print("kp: ");Serial.print(aTune.GetKp(), 4);Serial.print(" ");
+    Serial.print("ki: ");Serial.print(aTune.GetKi(), 4);Serial.print(" ");
+    Serial.print("kd: ");Serial.print(aTune.GetKd(), 4);Serial.println();
 }
 
 void SerialReceive()
