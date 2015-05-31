@@ -5,6 +5,9 @@
 #include <Task.h>
 #include <TaskScheduler.h>
 
+// Get this from https://github.com/br3ttb/Arduino-PID-Library
+#include <PID_v1.h>
+
 #include "pidtask.h"
 MotorPID motorctrl;
 
