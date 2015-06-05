@@ -19,10 +19,10 @@
 #define M2_FWD_MEAS A0
 #define M2_BWD_MEAS A1
 
-#define M1_KP 1.30
+#define M1_KP 1.50
 #define M1_KI 0.75
 #define M1_KD 0.00 // Tunign this is hard, hope the compiler optimizes the no-op of calculation with this away
-#define M2_KP 1.30
+#define M2_KP 1.50
 #define M2_KI 0.75
 #define M2_KD 0.00 // Tunign this is hard, hope the compiler optimizes the no-op of calculation with this away
 
