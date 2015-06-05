@@ -4,9 +4,6 @@ import hid # tested with hidapi==0.7.99-5
 import zmq
 import time
 
-MOTOR_MAX_SETPOINT = 500.0
-
-
 # 1: left stick, x, 0=left, 255=right
 # 2: left stick, y, 0=up, 255=down
 # 3: right stick, x, 0=left, 255=right
@@ -48,12 +45,12 @@ while True:
 		continue
 
 #	print(' '.join("%d:%%2x"%x for x in range(25)) % values)
-	left_x = deadzone(map(values[1], 0.0, MOTOR_MAX_SETPOINT, -1.0, 1.0))
-	left_y = deadzone(map(values[2], 0.0, MOTOR_MAX_SETPOINT, -1.0, 1.0))
-	right_x = deadzone(map(values[3], 0.0, MOTOR_MAX_SETPOINT, -1.0, 1.0))
-	right_y = deadzone(map(values[4], 0.0, MOTOR_MAX_SETPOINT, -1.0, 1.0))
-	left_trigger = map(values[8], 0.0, MOTOR_MAX_SETPOINT, 0.0, 1.0)
-	right_trigger = map(values[9], 0.0, MOTOR_MAX_SETPOINT, 0.0, 1.0)
+	left_x = deadzone(map(values[1], 0.0, 255.0, -1.0, 1.0))
+	left_y = deadzone(map(values[2], 0.0, 255.0, -1.0, 1.0))
+	right_x = deadzone(map(values[3], 0.0, 255.0, -1.0, 1.0))
+	right_y = deadzone(map(values[4], 0.0, 255.0, -1.0, 1.0))
+	left_trigger = map(values[8], 0.0, 255.0, 0.0, 1.0)
+	right_trigger = map(values[9], 0.0, 255.0, 0.0, 1.0)
 
 	if values[5] & 0x10 == 0x10: # square switches to tank controls
 		mode = 0
@@ -61,14 +58,14 @@ while True:
 		mode = 1
 
 	if mode == 0: # Tank controls
-		left_motor = left_y * -MOTOR_MAX_SETPOINT
-		right_motor = right_y * -MOTOR_MAX_SETPOINT
+		left_motor = left_y * -255.0
+		right_motor = right_y * -255.0
 	elif mode == 1: # Car-ish controls (still allows turning without moving forward)
 		forward = right_trigger - left_trigger
-		left_motor = forward * MOTOR_MAX_SETPOINT * (1.0-abs(left_x))
-		right_motor = forward * MOTOR_MAX_SETPOINT * (1.0-abs(left_x))
-		left_motor += (left_x * MOTOR_MAX_SETPOINT) * abs(left_x)
-		right_motor += (-left_x * MOTOR_MAX_SETPOINT) * abs(left_x)
+		left_motor = forward * 255.0 * (1.0-abs(left_x))
+		right_motor = forward * 255.0 * (1.0-abs(left_x))
+		left_motor += (left_x * 255.0) * abs(left_x)
+		right_motor += (-left_x * 255.0) * abs(left_x)
 		# print ("%.2f "*7) % (left_x, left_y, right_x, right_y, left_trigger, right_trigger, forward)
 	
 	msg = ['setspeeds', str(int(right_motor)), str(int(left_motor))]
