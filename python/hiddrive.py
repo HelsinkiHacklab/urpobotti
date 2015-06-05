@@ -68,12 +68,14 @@ while True:
 		right_motor += (-left_x * 255.0) * abs(left_x)
 		# print ("%.2f "*7) % (left_x, left_y, right_x, right_y, left_trigger, right_trigger, forward)
 	
-	msg = ['setspeeds', str(int(right_motor)), str(int(left_motor))]
+	msg = ['setspeeds', str(int(left_motor)), str(int(right_motor))]
 	
-	if msg != prev: # lazy way to check if we should send an update =D
+	if (   msg != prev
+	    or (time.time() - last_update) > 0.050): # lazy way to check if we should send an update =D
 		prev = msg
+		last_update = time.time()
 
 		client.send_multipart(msg)
 		client.recv()
 
-		print(str(int(right_motor)), str(int(left_motor)))
+		print(str(int(left_motor)), str(int(right_motor)))

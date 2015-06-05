@@ -29,9 +29,9 @@ class myserver(zmqdecorators.service):
             self._setspeeds(0,0)
 
     def _setspeeds(self, m1speed, m2speed):
-        mapped1 = (int(m1speed) - 127) *4
-        mapped2 = (int(m2speed) - 127) *4
-        self.serial_port.write("SPDS:%d,%d\n" % (mapped1, mapped1))
+        mapped1 = int(m1speed) * 2
+        mapped2 = int(m2speed) * 2
+        self.serial_port.write("SPDS:%d,%d\n" % (mapped1, mapped2))
 
     @zmqdecorators.method()
     def setspeeds(self, resp, m1speed, m2speed):
