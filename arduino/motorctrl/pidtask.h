@@ -110,7 +110,7 @@ void measure_motor1()
 
     digitalWrite(M1_ENABLE_PIN, 0);
     // give it some time
-    delayMicroseconds(500);
+    delayMicroseconds(100);
 
     // Do measurements
     for(uint8_t i=0; i < MPOINTS; i++)
@@ -177,7 +177,7 @@ void measure_motor2()
 
     digitalWrite(M2_ENABLE_PIN, 0);
     // give it some time
-    delayMicroseconds(500);
+    delayMicroseconds(100);
 
     // Do measurements
     for(uint8_t i=0; i < MPOINTS; i++)
