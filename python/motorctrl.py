@@ -20,7 +20,7 @@ class myserver(zmqdecorators.service):
         self.input_buffer = ""
         self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
         self.last_command_time = time.time()
-        self.pcb = ioloop_mod.PeriodicCallback(self.check_data_reveived, 100)
+        self.pcb = ioloop_mod.PeriodicCallback(self.check_data_reveived, COMMAND_GRACE_TIME)
         self.pcb.start()
 
     def check_data_reveived(self, *args):
