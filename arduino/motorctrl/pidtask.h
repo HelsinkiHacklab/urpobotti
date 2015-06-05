@@ -5,8 +5,8 @@
 #include <Task.h>
 #include <PID_v1.h>
 
-#define M_MIN -125
-#define M_MAX 125
+#define M_MIN -500
+#define M_MAX 500
 
 #define EMF_SAMPLE_INTERVAL 20 // 20ms -> 50Hz
 #define M1_ENABLE_PIN 4
@@ -19,12 +19,13 @@
 #define M2_FWD_MEAS A0
 #define M2_BWD_MEAS A1
 
-#define M1_KP 1.50
-#define M1_KI 0.75
-#define M1_KD 0.00 // Tunign this is hard, hope the compiler optimizes the no-op of calculation with this away
-#define M2_KP 1.50
-#define M2_KI 0.75
-#define M2_KD 0.00 // Tunign this is hard, hope the compiler optimizes the no-op of calculation with this away
+// Foo
+#define M1_KP 0.25
+#define M1_KI 1.75
+#define M1_KD 0.0 // Tunign this is hard, hope the compiler optimizes the no-op of calculation with this away
+#define M2_KP 0.25
+#define M2_KI 1.75
+#define M2_KD 0.0 // Tunign this is hard, hope the compiler optimizes the no-op of calculation with this away
 
 int16_t m1_speed;
 int16_t m2_speed;
@@ -143,7 +144,7 @@ void measure_motor1()
         avgtmp += measured[i];
         counts++;
     }
-    m1_measured = ((avgtmp / counts) >> 2) * corr;
+    m1_measured = (avgtmp / counts) * corr;
     /*
     Serial.println(F("M1 measurements"));
     print_measured();
@@ -210,7 +211,7 @@ void measure_motor2()
         avgtmp += measured[i];
         counts++;
     }
-    m2_measured = ((avgtmp / counts) >> 2) * corr;
+    m2_measured = (avgtmp / counts) * corr;
     
     /*
     Serial.println(F("M2 measurements"));
