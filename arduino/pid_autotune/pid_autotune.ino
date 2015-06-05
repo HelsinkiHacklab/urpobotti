@@ -126,7 +126,7 @@ void measure_motor1()
         avgtmp += measured[i];
         counts++;
     }
-    m1_measured = (avgtmp / counts) * corr;
+    m1_measured = ((avgtmp / counts) >> 2) * corr;
     
     /*
     Serial.println(F("M1 measurements"));
@@ -194,7 +194,7 @@ void measure_motor2()
         avgtmp += measured[i];
         counts++;
     }
-    m2_measured = (avgtmp / counts) * corr;
+    m2_measured = ((avgtmp / counts) >> 2) * corr;
     
     /*
     Serial.println(F("M2 measurements"));
@@ -219,10 +219,7 @@ void measure_motor2()
 
 byte ATuneModeRemember=2;
 double input=80, output=50, setpoint=180;
-// okish for M1, and M2 it's similar enough
-//double kp=0.025,ki=0.5,kd=0.005;
-
-double kp=0.025,ki=0.5,kd=0.005;
+double kp=1.3,ki=0.75,kd=0.0;
 
 
 double kpmodel=1.5, taup=100, theta[50];
@@ -278,7 +275,7 @@ void setup()
     pinMode(M2_ENABLE_PIN, OUTPUT);
     pinMode(M2_PWM_PIN, OUTPUT);
 
-  setpoint = 400;
+  setpoint = 100;
   myPID.SetOutputLimits(-127, 127);
 
 }
