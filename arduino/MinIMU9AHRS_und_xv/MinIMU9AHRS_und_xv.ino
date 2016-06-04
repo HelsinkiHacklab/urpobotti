@@ -311,9 +311,15 @@ void loop() //Main Loop
 {
   if (!Serial.dtr())
   {
+      /**
+       * The disappearing serialport is a baaad idea
       Serial.println(F("No DTR detected, rebooting"));
       CPU_RESTART
       while(1);
+       */
+      // Print the ident line instead
+      Serial.println();
+      Serial.println(F("Board: MinIMU9AHRS_XV initializing"));
   }
   if((millis()-timer)>=20)  // Main loop runs at 50Hz
   {

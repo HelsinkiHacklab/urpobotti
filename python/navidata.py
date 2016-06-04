@@ -67,12 +67,12 @@ class navidataserver(zmqdecorators.service):
 
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
     def lidar(self, angle, distance_mm, quality):
-        print("DEBUG: reported lidar: %s,%s,%s" % (angle, distance_mm, quality))
+        #print("DEBUG: reported lidar: %s,%s,%s" % (angle, distance_mm, quality))
         pass
 
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
     def attitude(self, roll, pitch, yaw):
-        print("DEBUG: reported attitude: %s,%s,%s" % (roll, pitch, yaw))
+        #print("DEBUG: reported attitude: %s,%s,%s" % (roll, pitch, yaw))
         pass
 
     def cleanup(self):

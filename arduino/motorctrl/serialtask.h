@@ -66,9 +66,16 @@ bool SerialReader::canRun(uint32_t now)
 {
     if (!Serial.dtr())
     {
+        /**
+         * This was a bad idea on Teensy 3.2, the serial port going away caused crashes
         Serial.println(F("No DTR detected, rebooting"));
         CPU_RESTART
         while(1);
+         */
+        // Print the identity instead
+        Serial.println();
+        Serial.println(F("Board: motorctrl initializing"));
+        delay(20);
     }
     return Serial.available();
 }

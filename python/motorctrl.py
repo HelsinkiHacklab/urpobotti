@@ -63,22 +63,12 @@ class motorserver(zmqdecorators.service):
     def message_received(self, message):
         #print("DEBUG: msg=%s" % message)
         try:
-            #!PPS:0,0
-            if (message[:5] == '!EMF:'):
-                (rpps, lpps) = message[5:].split(',')
-                # These are already strings, no need to cast
-                self.ppsreport(rpps, lpps)
-                pass
-
-        except Exception,e:
-            print "message_received: Got exception %s" % e
+            # Currently we have no incoming messages from this board
+            pass
+        except Exception as e:
+            print "message_received exception: Got exception %s" % repr(e)
             # Ignore indexerrors, they just mean we could not parse the command
             pass
-        pass
-
-    @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
-    def ppsreport(self, rpps, lpps):
-        #print("DEBUG: reported PPS: %s,%s" % (rpps, lpps))
         pass
 
     def cleanup(self):
@@ -87,9 +77,7 @@ class motorserver(zmqdecorators.service):
 
     def run(self):
         print("Starting motorserver")
-        self.scan()
         super(motorserver, self).run()
-
 
 
 
