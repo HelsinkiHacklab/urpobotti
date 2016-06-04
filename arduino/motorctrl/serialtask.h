@@ -141,12 +141,7 @@ void SerialReader::process_command()
     {
         m1value = ardubus_hex2int(parsebuffer[1],parsebuffer[2],parsebuffer[3],parsebuffer[4]);
         m2value = ardubus_hex2int(parsebuffer[5],parsebuffer[6],parsebuffer[7],parsebuffer[8]);
-        Serial.print(F("DEBUG: setting speeds "));
-        Serial.print(m1value);
-        Serial.print(",");
-        Serial.println(m2value);
         motorctrl.setSpeeds(m1value, m2value);
-        Serial.println("D8");
         return;
     }
 
