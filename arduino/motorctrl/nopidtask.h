@@ -9,11 +9,14 @@
 #define M1_PWM_PIN 3
 #define M2_PWM_PIN 4
 
-#define PWM_MIDDLE (2047)
+#define PWM_MIDDLE (2048)
 
 
 int16_t m1_speed;
 int16_t m2_speed;
+int16_t m1_pwm;
+int16_t m2_pwm;
+
 
 void setPWMspeeds(int16_t m1value, int16_t m2value)
 {
@@ -23,24 +26,26 @@ void setPWMspeeds(int16_t m1value, int16_t m2value)
     // TODO: rewrite as register addressing
     if (m1_speed == 0)
     {
+        m1_pwm = PWM_MIDDLE;
         digitalWrite(M1_ENABLE_PIN, 0);
-        analogWrite(M1_PWM_PIN, PWM_MIDDLE);
     }
     else
     {
+        m1_pwm = PWM_MIDDLE - m1_speed;
         digitalWrite(M1_ENABLE_PIN, 1);
-        analogWrite(M1_PWM_PIN, PWM_MIDDLE + m1_speed);
     }
+    analogWrite(M1_PWM_PIN, m1_pwm);
     if (m2_speed == 0)
     {
+        m2_pwm = PWM_MIDDLE;
         digitalWrite(M2_ENABLE_PIN, 0);
-        analogWrite(M2_PWM_PIN, PWM_MIDDLE);
     }
     else
     {
+        m2_pwm = PWM_MIDDLE + m2_speed;
         digitalWrite(M2_ENABLE_PIN, 1);
-        analogWrite(M2_PWM_PIN, PWM_MIDDLE + m2_speed);
     }
+    analogWrite(M2_PWM_PIN, m2_pwm);
 }
 
 class MotorNOPID : public Task
@@ -63,10 +68,12 @@ MotorNOPID::MotorNOPID()
     // Do we need to contruct something ?
     faulted = false;
     analogWriteResolution(12);
-    pinMode(M1_ENABLE_PIN, OUTPUT);
+    analogWriteFrequency(3, 11718.75);
+    setPWMspeeds(0,0);
     pinMode(M1_PWM_PIN, OUTPUT);
-    pinMode(M2_ENABLE_PIN, OUTPUT);
     pinMode(M2_PWM_PIN, OUTPUT);
+    pinMode(M1_ENABLE_PIN, OUTPUT);
+    pinMode(M2_ENABLE_PIN, OUTPUT);
 }
 
 bool MotorNOPID::canRun(uint32_t now)

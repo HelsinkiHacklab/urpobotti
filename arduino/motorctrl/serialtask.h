@@ -4,6 +4,37 @@
 #include <Arduino.h>
 #include <Task.h>
 
+/**
+ * Parses ASCII [0-9A-F] hexadecimal to byte value
+ */
+inline byte ardubus_hex2byte(byte hexchar)
+{
+    if (   0x40 < hexchar
+        && hexchar < 0x47) // A-F
+    {
+        return (hexchar - 0x41) + 10; 
+    }
+    if (   0x2f < hexchar
+        && hexchar < 0x3a) // 0-9
+    {
+        return (hexchar - 0x30);
+    }
+    return 0x0; // Failure.
+    
+}
+
+inline byte ardubus_hex2byte(byte hexchar0, byte hexchar1)
+{
+    return (ardubus_hex2byte(hexchar0) << 4) | ardubus_hex2byte(hexchar1);
+}
+
+inline int ardubus_hex2int(byte hexchar0, byte hexchar1, byte hexchar2, byte hexchar3)
+{
+    return ardubus_hex2byte(hexchar0, hexchar1) << 8 | ardubus_hex2byte(hexchar2, hexchar3);
+}
+
+
+
 #define SERIAL_PARSE_BUFFER_SIZE 27 // 25 + crlf
 
 // We might actually want use the canrun 
@@ -37,7 +68,6 @@ bool SerialReader::canRun(uint32_t now)
 
 void SerialReader::run(uint32_t now)
 {
-    Serial.println("Reading");
     for (uint8_t d = Serial.available(); d > 0; d--)
     {
         parsebuffer[incoming_position] = Serial.read();
@@ -58,7 +88,7 @@ void SerialReader::run(uint32_t now)
             process_command();
             // Reset position
             incoming_position = 0;
-            parsebuffer[0]=0x0;
+            parsebuffer[0] = 0x0;
             // PONDER: Explicitly clear the buffer with memset ??
             //memset(&parsebuffer, 0x0, sizeof(parsebuffer));
             return;
@@ -91,14 +121,32 @@ void SerialReader::process_command()
     */
     int16_t m1value;
     int16_t m2value;
-    if (sscanf(parsebuffer, "SPDS:%d,%d", &m1value, &m2value) == 2)
+    /**
+     *  This fscks up the stack on Teensy3.2
+     *  
+    if (sscanf(parsebuffer, "S:%d,%d", &m1value, &m2value) == 2)
     {
         // TODO: Use the motorctrl to set speed in PPS
         Serial.print(F("DEBUG: setting speeds "));
         Serial.print(m1value);
         Serial.print(",");
         Serial.println(m2value);
+        //motorctrl.setSpeeds(m1value, m2value);
+        Serial.println("D8");
+        return;
+    }
+     */
+
+    if (parsebuffer[0] == 'S')
+    {
+        m1value = ardubus_hex2int(parsebuffer[1],parsebuffer[2],parsebuffer[3],parsebuffer[4]);
+        m2value = ardubus_hex2int(parsebuffer[5],parsebuffer[6],parsebuffer[7],parsebuffer[8]);
+        Serial.print(F("DEBUG: setting speeds "));
+        Serial.print(m1value);
+        Serial.print(",");
+        Serial.println(m2value);
         motorctrl.setSpeeds(m1value, m2value);
+        Serial.println("D8");
         return;
     }
 
