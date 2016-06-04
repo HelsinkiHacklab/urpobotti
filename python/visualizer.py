@@ -11,17 +11,23 @@ import math
 
 DEBUG = False
 
+# REMEMBER: Z depth not up...
 # All units in mm
 
 class tank(object):
-    size = (335, 185, 95)
+    size_lwh = visual.vector(335, 185, 95)
 
     def __init__(self, **kwargs):
+        self.size = visual.vector(self.size_lwh[0],self.size_lwh[2],self.size_lwh[1]) # VPython coordinate system, Z is depth aka width
+        self.box_bl = visual.vector(-self.size_lwh[0]/2.0,-self.size_lwh[2]/2.0,-self.size_lwh[1]/2.0)
         self.container = visual.frame(**kwargs)
-        self.box = visual.box(frame=self.container, length=self.size[0], width=self.size[1], height=self.size[2], color=(0,0,0.7))
-        self.lidarframe = visual.frame(frame=self.container, pos=(self.size[0]/2.0, self.size[1]/2.0, self.size[2]))
-        self.lidarpoints = visual.points(pos=[(0,0,0) for i in range(360)], frame=self.lidarframe, size=5, color=(0 , 1, 0))
-        print(repr(self.lidarpoints))
+        self.box = visual.box(frame=self.container, length=self.size_lwh[0], width=self.size_lwh[1], height=self.size_lwh[2], color=(0,0,0.7))
+        self.boxpoints = visual.points(pos=[self.box_bl, self.box_bl+self.size], frame=self.container, size=5, color=(1 , 0, 1))
+        self.boxpoints.color[0] = (1,0,0)
+        self.lidarframe = visual.frame(frame=self.container, pos=(0, self.size_lwh[2]/2.0+1, 0))
+        self.lidarpoints = visual.points(pos=[(0,0,0) for i in range(360)], frame=self.lidarframe, size=5, color=(0 , 0.5, 0))
+        for angle in range(360):
+            self.update_lidar_point(angle, 20, None)
 
     def update_lidar_point(self, angle, dist_mm, quality):
         if (   angle < 0
@@ -40,50 +46,72 @@ class myscene(object):
 
     def __init__(self, zmq_ctx):
         self.zmq_ctx = zmq_ctx
+        self.scene = visual.scene # shortcut
 
-        visual.scene.width = 1280
-        visual.scene.height = 768
-        visual.scene.autoscale = True
-        visual.scene.title = "Visualizing tank ZMQ ouput"
+        self.scene.width = 1280
+        self.scene.height = 768
+        self.scene.autoscale = True
+        self.scene.title = "Visualizing tank ZMQ ouput"
         self.tank = tank()
 
-        self.navidata = zmq_ctx.socket(zmq.SUB)
-        self.navidata.connect("tcp://sonofurpo.local:7578")
-        self.navidata.setsockopt_string(zmq.SUBSCRIBE, u'')
+        try:
+            self.navidata = zmq_ctx.socket(zmq.SUB)
+            self.navidata.connect("tcp://sonofurpo.local:7578")
+            self.navidata.setsockopt_string(zmq.SUBSCRIBE, u'')
 
-        # Get them pollers
-        self.poller = zmq.Poller()
-        self.poller.register(self.navidata, zmq.POLLIN)
-
-
-
-
-    def frame_recv(self, stream, msg):
-        pass
+            # Get them pollers
+            self.poller = zmq.Poller()
+            self.poller.register(self.navidata, zmq.POLLIN)
+        except zmq.error.ZMQError as e:
+            self.poller = None
+            print("Got exception '%s' from ZMQ" % e)
 
     def run(self):
         print("Running")
         try:
-            visual.scene.visible = True
-            visual.scene.autoscale = False
-            visual.scene.userzoom = True
-#            ioloop.IOLoop.instance().start()
+            self.scene.up = (0,1,0) # REMEMBER: Z depth not up...
+            self.scene.visible = True
+            self.scene.autoscale = False
+            self.scene.range = self.tank.size*2
+            self.scene.userzoom = True
+            self.scene.forward = visual.vector(0.80, -0.60, 0.03)
             while(True):
-                socks = dict(self.poller.poll(30))
-                if self.navidata in socks and socks[self.navidata] == zmq.POLLIN:
-                    msg = self.navidata.recv_multipart()
-                    
-                    if msg[0] == 'lidar':
-                        #print("Got lidar data %s" % repr(msg[1:]))
-                        self.tank.update_lidar_point(int(msg[1]), int(msg[2]), int(msg[3]))
-                        pass
-    
-                    if msg[0] == 'attitude':
-                        print("Got attitude data %s" % repr(msg[1:]))
-                        pass
+                if self.poller:
+                    socks = dict(self.poller.poll(30))
+                    if self.navidata in socks and socks[self.navidata] == zmq.POLLIN:
+                        msg = self.navidata.recv_multipart()
+
+                        if msg[0] == 'lidar':
+                            print("Got lidar data %s" % repr(msg[1:]))
+                            self.tank.update_lidar_point(int(msg[1]), int(msg[2]), int(msg[3]))
+                            pass
+
+                        if msg[0] == 'attitude':
+                            print("Got attitude data %s" % repr(msg[1:]))
+                            pass
+                # Poll for events (the callback is in newer version)
+                if self.scene.mouse.events:
+                    self.mbinteraction(self.scene.mouse.getevent())
+                elif self.scene.kb.keys:
+                    self.kbinteraction(self.scene.kb.getkey())
+                visual.rate(30)
+
 
         except KeyboardInterrupt:
             self.quit()
+
+    def mbinteraction(self, event):
+        print("Got event %s" % repr(event))
+        print("Forward %s up %s" % (repr(self.scene.forward),  repr(self.scene.up)))
+
+    def kbinteraction(self, event):
+        print("Got event %s" % repr(event))
+        if event == '+':
+            self.scene.autoscale = False
+            self.scene.scale *= 1.5
+        if event == '-':
+            self.scene.autoscale = False
+            self.scene.scale /= 1.5
 
     def quit(self):
         print("Quitting")
