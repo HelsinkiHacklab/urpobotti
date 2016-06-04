@@ -13,9 +13,9 @@ SIGNALS_PORT = 7576
 COMMAND_GRACE_TIME = 0.250
 
 
-class myserver(zmqdecorators.service):
+class motorserver(zmqdecorators.service):
     def __init__(self, service_name, service_port, serialport):
-        super(myserver, self).__init__(service_name, service_port)
+        super(motorserver, self).__init__(service_name, service_port)
         self.serial_port = serialport
         self.input_buffer = ""
         self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
@@ -83,6 +83,7 @@ class myserver(zmqdecorators.service):
 
     def cleanup(self):
         print("Cleanup called")
+        self._setspeeds(0,0)
 
 
 
@@ -92,6 +93,6 @@ if __name__ == "__main__":
     import serial
     import sys,os
     port = serial.Serial(sys.argv[1], 115200, xonxoff=False, timeout=0.01)
-    instance = myserver(SERVICE_NAME, SERVICE_PORT, port)
+    instance = motorserver(SERVICE_NAME, SERVICE_PORT, port)
     print("Starting")
     instance.run()
