@@ -6,9 +6,10 @@ import zmqdecorators
 
 import time
 import re
-import yaml
 import glob
+import serial
 
+import os,sys
 if os.name == 'posix' and sys.version_info[0] < 3:
     import subprocess32 as subprocess
 else:
@@ -24,11 +25,18 @@ class my_launcher(zmqdecorators.service):
 
     def __init__(self, service_name, service_port):
         super(my_launcher, self).__init__(service_name, service_port)
+        self.board_ident_timeout = 4
+        self.board_ident_regex = re.compile(r"\r\nBoard: (\w+) initializing\r\n")
+        self.subprocesses = []
+        self.search_ports = [
+            '/dev/ttyUSB*',
+            '/dev/ttyACM*',
+        ]
 
     def test_port(self, serial_device):
         """Tests a given device for a board and if found will spin off a service object for it"""
         try:
-            port = serial.Serial(serial_device, self.config['speed'], xonxoff=False, timeout=0.01)
+            port = serial.Serial(serial_device, 115200, xonxoff=False, timeout=0.01)
             # PONDER: are these the right way around...
             port.setDTR(False) # Reset the arduino by driving DTR for a moment (RS323 signals are active-low)
             time.sleep(0.050)
@@ -80,21 +88,24 @@ class my_launcher(zmqdecorators.service):
     @zmqdecorators.method()
     def scan(self):
         """Scans the configured serial devices for boards"""
-        for filespec in self.config['search_ports']:
+        for filespec in self.search_ports:
             for comport in glob.glob(filespec):
                 self.test_port(comport)
 
     def cleanup(self):
         print("Cleanup called")
-        for p in self.subprocesses
+        for p in self.subprocesses:
+            # PONDER: How to signal them tp terminate ??
             p.join()
         self.subprocesses = []
+
+    def run(self):
+        print("Starting my_launcher")
+        self.scan()
+        super(my_launcher, self).run()
 
 
 
 if __name__ == "__main__":
-    import serial
-    import sys,os
-    instance = myserver(SERVICE_NAME, SERVICE_PORT)
-    print("Starting")
+    instance = my_launcher(SERVICE_NAME, SERVICE_PORT)
     instance.run()

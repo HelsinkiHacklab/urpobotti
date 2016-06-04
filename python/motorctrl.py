@@ -85,6 +85,10 @@ class motorserver(zmqdecorators.service):
         print("Cleanup called")
         self._setspeeds(0,0)
 
+    def run(self):
+        print("Starting motorserver")
+        self.scan()
+        super(motorserver, self).run()
 
 
 
@@ -94,5 +98,4 @@ if __name__ == "__main__":
     import sys,os
     port = serial.Serial(sys.argv[1], 115200, xonxoff=False, timeout=0.01)
     instance = motorserver(SERVICE_NAME, SERVICE_PORT, port)
-    print("Starting")
     instance.run()

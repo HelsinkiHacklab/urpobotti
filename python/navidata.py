@@ -20,6 +20,7 @@ class navidataserver(zmqdecorators.service):
         self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
 
     def run(self):
+        print("Starting navidataserver")
         # Setup for ASCII output
         self.serial_port.write("\r\n")
         self.serial_port.write("HideRaw\r\n")
@@ -86,5 +87,4 @@ if __name__ == "__main__":
     import sys,os
     port = serial.Serial(sys.argv[1], 115200, xonxoff=False, timeout=0.01)
     instance = navidataserver(SERVICE_NAME, SERVICE_PORT, port)
-    print("Starting")
     instance.run()

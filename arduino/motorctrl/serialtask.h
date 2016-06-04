@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <Task.h>
 
+
 /**
  * Parses ASCII [0-9A-F] hexadecimal to byte value
  */
@@ -63,6 +64,12 @@ SerialReader::SerialReader()
 
 bool SerialReader::canRun(uint32_t now)
 {
+    if (!Serial.dtr())
+    {
+        Serial.println(F("No DTR detected, rebooting"));
+        CPU_RESTART
+        while(1);
+    }
     return Serial.available();
 }
 

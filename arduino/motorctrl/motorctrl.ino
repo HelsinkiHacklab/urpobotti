@@ -1,5 +1,11 @@
 // Motor controller for Urpobotti
 
+// Teensy 3.2 restart macro
+#define CPU_RESTART_ADDR (uint32_t *)0xE000ED0C
+#define CPU_RESTART_VAL 0x5FA0004
+#define CPU_RESTART (*CPU_RESTART_ADDR = CPU_RESTART_VAL);
+
+
 // Get this library from http://bleaklow.com/files/2010/Task.tar.gz (and fix WProgram.h -> Arduino.h)
 // and read http://bleaklow.com/2010/07/20/a_very_simple_arduino_task_manager.html for background and instructions
 #include <Task.h>
@@ -18,9 +24,11 @@ void setup()
     {
         ; // wait for serial port to connect. Needed for native USB port only
     }
+    Serial.println();
+    Serial.println(F("Board: motorctrl initializing"));
 
     motorctrl.setSpeeds(0,0);
-    Serial.println("motorctrl booted");
+    Serial.println(F("Board: motorctrl booted"));
 }
 
 void loop()
@@ -32,3 +40,4 @@ void loop()
     // Run the scheduler - never returns.
     sched.run();
 }
+

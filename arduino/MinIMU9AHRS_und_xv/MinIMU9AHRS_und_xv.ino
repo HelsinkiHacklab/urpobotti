@@ -1,3 +1,5 @@
+// Teensy 2 restart macro
+#define CPU_RESTART (_restart_Teensyduino_());
 
 /*
   XV Lidar Controller v1.2.2
@@ -235,11 +237,17 @@ float Temporary_Matrix[3][3]={
 void setup()
 { 
   Serial.begin(115200);
+  while (!Serial)
+  {
+      ; // wait for serial port to connect. Needed for native USB port only
+  }
   pinMode (STATUS_LED,OUTPUT);  // Status LED
   
   I2C_Init();
 
-  Serial.println(F("MinIMU9AHRS + XV LIDAR"));
+  Serial.println();
+  Serial.println(F("Board: MinIMU9AHRS_XV initializing"));
+
 
   digitalWrite(STATUS_LED,LOW);
   delay(100);
@@ -296,10 +304,17 @@ void setup()
 
   initSerialCommands();
 
+  Serial.println(F("Board: MinIMU9AHRS_XV booted"));
 }
 
 void loop() //Main Loop
 {
+  if (!Serial.dtr())
+  {
+      Serial.println(F("No DTR detected, rebooting"));
+      CPU_RESTART
+      while(1);
+  }
   if((millis()-timer)>=20)  // Main loop runs at 50Hz
   {
     counter++;
