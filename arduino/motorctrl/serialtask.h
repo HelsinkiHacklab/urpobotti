@@ -37,6 +37,7 @@ bool SerialReader::canRun(uint32_t now)
 
 void SerialReader::run(uint32_t now)
 {
+    Serial.println("Reading");
     for (uint8_t d = Serial.available(); d > 0; d--)
     {
         parsebuffer[incoming_position] = Serial.read();
@@ -93,13 +94,11 @@ void SerialReader::process_command()
     if (sscanf(parsebuffer, "SPDS:%d,%d", &m1value, &m2value) == 2)
     {
         // TODO: Use the motorctrl to set speed in PPS
-        /*
         Serial.print(F("DEBUG: setting speeds "));
         Serial.print(m1value);
         Serial.print(",");
         Serial.println(m2value);
-        */
-        motorctrl.setSpeeds(m1value, m2value);
+        //motorctrl.setSpeeds(m1value, m2value);
         return;
     }
 

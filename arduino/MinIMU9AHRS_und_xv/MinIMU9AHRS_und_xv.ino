@@ -239,43 +239,20 @@ void setup()
   
   I2C_Init();
 
-  Serial.println("Pololu MinIMU-9 + Arduino AHRS");
+  Serial.println(F("MinIMU9AHRS + XV LIDAR"));
 
   digitalWrite(STATUS_LED,LOW);
-  delay(1500);
+  delay(100);
  
   Accel_Init();
   Compass_Init();
   Gyro_Init();
   
-  delay(20);
-  
-  for(int i=0;i<32;i++)    // We take some readings...
-    {
-    Read_Gyro();
-    Read_Accel();
-    for(int y=0; y<6; y++)   // Cumulate values
-      AN_OFFSET[y] += AN[y];
-    delay(20);
-    }
-    
-  for(int y=0; y<6; y++)
-    AN_OFFSET[y] = AN_OFFSET[y]/32;
-    
-  AN_OFFSET[5]-=GRAVITY*SENSOR_SIGN[5];
-  
-  //Serial.println("Offset:");
-  for(int y=0; y<6; y++)
-    Serial.println(AN_OFFSET[y]);
-  
-  delay(2000);
   digitalWrite(STATUS_LED,HIGH);
     
   timer=millis();
   delay(20);
   counter=0;
-
-
 
 
   EEPROM_readAnything(0, xv_config);

@@ -5,11 +5,10 @@
 #include <Task.h>
 #include <TaskScheduler.h>
 
-// Get this from https://github.com/br3ttb/Arduino-PID-Library
-#include <PID_v1.h>
-
-#include "pidtask.h"
-MotorPID motorctrl;
+/*
+#include "nopidtask.h"
+MotorNOPID motorctrl;
+*/
 
 #include "serialtask.h"
 SerialReader serialreader;
@@ -17,14 +16,20 @@ SerialReader serialreader;
 void setup()
 {
     Serial.begin(115200);
+    while (!Serial)
+    {
+        ; // wait for serial port to connect. Needed for native USB port only
+    }
 
-    Serial.println(F("motorctrl booted"));
+    Serial.println("motorctrl booted");
 }
 
 void loop()
 {
     // Initialise the task list and scheduler. (uitask must be the last one, otherwise it robs priority from everything else)
-    Task *tasks[] = { &serialreader, &motorctrl };
+    //Task *tasks[] = { &serialreader, &motorctrl };
+    //Task *tasks[] = { &motorctrl };
+    Task *tasks[] = { &serialreader };
     TaskScheduler sched(tasks, NUM_TASKS(tasks));
 
     // Run the scheduler - never returns.
