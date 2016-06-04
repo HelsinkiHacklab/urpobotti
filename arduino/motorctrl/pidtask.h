@@ -251,7 +251,6 @@ MotorPID::MotorPID()
     M1_PID.SetOutputLimits(-127, 127);
     M2_PID.SetOutputLimits(-127, 127);
 
-    setSpeeds(0,0);
 }
 
 bool MotorPID::canRun(uint32_t now)

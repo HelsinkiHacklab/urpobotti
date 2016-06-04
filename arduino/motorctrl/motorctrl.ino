@@ -5,10 +5,8 @@
 #include <Task.h>
 #include <TaskScheduler.h>
 
-/*
 #include "nopidtask.h"
 MotorNOPID motorctrl;
-*/
 
 #include "serialtask.h"
 SerialReader serialreader;
@@ -21,15 +19,14 @@ void setup()
         ; // wait for serial port to connect. Needed for native USB port only
     }
 
+    motorctrl.setSpeeds(0,0);
     Serial.println("motorctrl booted");
 }
 
 void loop()
 {
     // Initialise the task list and scheduler. (uitask must be the last one, otherwise it robs priority from everything else)
-    //Task *tasks[] = { &serialreader, &motorctrl };
-    //Task *tasks[] = { &motorctrl };
-    Task *tasks[] = { &serialreader };
+    Task *tasks[] = { &serialreader, &motorctrl };
     TaskScheduler sched(tasks, NUM_TASKS(tasks));
 
     // Run the scheduler - never returns.

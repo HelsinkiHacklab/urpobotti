@@ -98,7 +98,7 @@ void SerialReader::process_command()
         Serial.print(m1value);
         Serial.print(",");
         Serial.println(m2value);
-        //motorctrl.setSpeeds(m1value, m2value);
+        motorctrl.setSpeeds(m1value, m2value);
         return;
     }
 
