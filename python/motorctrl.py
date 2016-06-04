@@ -25,13 +25,10 @@ class myserver(zmqdecorators.service):
 
     def check_data_reveived(self, *args):
         if (time.time() - self.last_command_time > COMMAND_GRACE_TIME):
-            #print("Over 0.1s since last command, stopping motors")
             self._setspeeds(0,0)
 
     def _setspeeds(self, m1speed, m2speed):
-        mapped1 = int(m1speed) * 2
-        mapped2 = int(m2speed) * 2
-        self.serial_port.write("SPDS:%d,%d\n" % (mapped1, mapped2))
+        self.serial_port.write("S%04X%04X\n" % ((m1speed & 0xffff), (m2speed & 0xffff)))
 
     @zmqdecorators.method()
     def setspeeds(self, resp, m1speed, m2speed):
