@@ -18,7 +18,6 @@ class motorserver(zmqdecorators.service):
         super(motorserver, self).__init__(service_name, service_port)
         self.serial_port = serialport
         self.input_buffer = ""
-        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
         self.last_command_time = time.time()
         self.pcb = ioloop_mod.PeriodicCallback(self.check_data_reveived, COMMAND_GRACE_TIME)
         self.pcb.start()
@@ -39,26 +38,28 @@ class motorserver(zmqdecorators.service):
         resp.send("ACK")
 
     def handle_serial_event(self, fd, events):
-        # Copied from arbus that was thread based
-        if not self.serial_port.inWaiting():
+        bytesToRead = self.serial_port.inWaiting()
+        if not bytesToRead:
             # Don't try to read if there is no data, instead sleep (yield) a bit
             time.sleep(0)
             return
-        data = self.serial_port.read(1)
+        data = self.serial_port.read(bytesToRead)
         if len(data) == 0:
             return
         #print("DEBUG: data=%s" % data)
 
-        # Put the data into inpit buffer and check for CRLF
-        self.input_buffer += data
-        # Trim prefix NULLs and linebreaks
-        self.input_buffer = self.input_buffer.lstrip(chr(0x0) + "\r\n")
-        #print "input_buffer=%s" % repr(self.input_buffer)
-        if (    len(self.input_buffer) > 1
-            and self.input_buffer[-2:] == "\r\n"):
-            # Got a message, parse it (sans the CRLF) and empty the buffer
-            self.message_received(self.input_buffer[:-2])
-            self.input_buffer = ""
+        # TODO: do this more sanely
+        for char in data:
+            # Put the data into inpit buffer and check for CRLF
+            self.input_buffer += char
+            # Trim prefix NULLs and linebreaks
+            self.input_buffer = self.input_buffer.lstrip(chr(0x0) + "\r\n")
+            #print "input_buffer=%s" % repr(self.input_buffer)
+            if (    len(self.input_buffer) > 1
+                and self.input_buffer[-2:] == "\r\n"):
+                # Got a message, parse it (sans the CRLF) and empty the buffer
+                self.message_received(self.input_buffer[:-2])
+                self.input_buffer = ""
 
     def message_received(self, message):
         #print("DEBUG: msg=%s" % message)
@@ -77,6 +78,7 @@ class motorserver(zmqdecorators.service):
 
     def run(self):
         print("Starting motorserver")
+        self.evthandler = ioloop_mod.IOLoop.instance().add_handler(self.serial_port.fileno(), self.handle_serial_event, ioloop_mod.IOLoop.instance().READ)
         super(motorserver, self).run()
 
 
