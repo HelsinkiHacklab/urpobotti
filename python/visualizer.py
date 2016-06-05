@@ -89,11 +89,11 @@ class myscene(object):
                         msg = self.navidata.recv_multipart()
 
                         if msg[0] == 'lidar':
-                            print("%f: Got lidar data" % time.time())
+                            print("%f: Got lidar data from %s" % (time.time(), msg[2]))
                             self.tank.update_lidar_points(json.loads(msg[1]))
 
                         if msg[0] == 'attitude':
-                            print("%f: Got attitude data" % time.time())
+                            print("%f: Got attitude data from %s" % (time.time(), msg[2]))
                             pass
                 # Poll for events (the callback is in newer version)
                 if self.scene.mouse.events:
