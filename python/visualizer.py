@@ -8,6 +8,7 @@ import sys
 import visual
 import zmq
 import math
+import numpy
 import json
 
 DEBUG = False
@@ -29,6 +30,11 @@ class tank(object):
         self.lidarpoints = visual.points(pos=[(0,0,0) for i in range(360)], frame=self.lidarframe, size=5, color=(0 , 0.5, 0))
         for angle in range(360):
             self.update_lidar_point(angle, 20, None)
+
+    def update_lidar_points(self, data):
+        # TODO: optimize to numpy vector operations calculating x&y
+        for angle in range(360):
+            self.update_lidar_point(angle, data[angle][0], data[angle][1])
 
     def update_lidar_point(self, angle, dist_mm, quality):
         if (   angle < 0
@@ -84,10 +90,7 @@ class myscene(object):
 
                         if msg[0] == 'lidar':
                             #print("Got lidar data %s" % repr(msg[1:]))
-                            data = json.loads(msg[1])
-                            for angle in range(360):
-                                self.tank.update_lidar_point(angle, data[angle][0], data[angle][1])
-                            pass
+                            self.tank.update_lidar_points(json.loads(msg[1]))
 
                         if msg[0] == 'attitude':
                             print("Got attitude data %s" % repr(msg[1:]))
