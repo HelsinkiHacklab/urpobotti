@@ -8,8 +8,9 @@ import sys
 import visual
 import zmq
 import math
-import numpy
+import numpy as np
 import json
+import time
 
 DEBUG = False
 
@@ -32,9 +33,8 @@ class tank(object):
             self.update_lidar_point(angle, 20, None)
 
     def update_lidar_points(self, data):
-        # TODO: optimize to numpy vector operations calculating x&y
-        for angle in range(360):
-            self.update_lidar_point(angle, data[angle][0], data[angle][1])
+        # TODO: can we optimize this more ?
+        self.lidarpoints.pos = [ (np.sin(np.deg2rad(angle))*values[0], 0, np.cos(np.deg2rad(angle))*values[0]) for angle, values in enumerate(data) ]
 
     def update_lidar_point(self, angle, dist_mm, quality):
         if (   angle < 0
@@ -84,16 +84,16 @@ class myscene(object):
             self.scene.forward = visual.vector(0.80, -0.60, 0.03)
             while(True):
                 if self.poller:
-                    socks = dict(self.poller.poll())
+                    socks = dict(self.poller.poll(10))
                     if self.navidata in socks and socks[self.navidata] == zmq.POLLIN:
                         msg = self.navidata.recv_multipart()
 
                         if msg[0] == 'lidar':
-                            #print("Got lidar data %s" % repr(msg[1:]))
+                            print("%f: Got lidar data" % time.time())
                             self.tank.update_lidar_points(json.loads(msg[1]))
 
                         if msg[0] == 'attitude':
-                            print("Got attitude data %s" % repr(msg[1:]))
+                            print("%f: Got attitude data" % time.time())
                             pass
                 # Poll for events (the callback is in newer version)
                 if self.scene.mouse.events:
