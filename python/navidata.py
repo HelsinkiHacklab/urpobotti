@@ -77,11 +77,11 @@ class navidataserver(zmqdecorators.service):
                 self.LIDAR_BUFFER[angle] = [ int(x) for x in match.group(2,3) ]
                 #print("DEBUG: angle=%d" % angle)
                 if angle == 359:
-                    self.lidar(json.dumps(self.LIDAR_BUFFER))
+                    self.lidar(json.dumps(self.LIDAR_BUFFER), str(time.time()))
             if (len(message) > 5 and message[:5] == '!ANG:'):
                 self.AHRS_BUFFER[self.AHRS_BUFFER_I] = [ float(x) for x in message[5:].split(',') ]
                 if self.AHRS_BUFFER_I == AHRS_BUFFER_SIZE - 1:
-                    self.attitude(json.dumps(self.AHRS_BUFFER))
+                    self.attitude(json.dumps(self.AHRS_BUFFER), str(time.time()))
                     self.AHRS_BUFFER_I = 0
                 self.AHRS_BUFFER_I += 1
                     
@@ -93,13 +93,13 @@ class navidataserver(zmqdecorators.service):
         pass
 
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
-    def lidar(self, jsondata):
-        #print("DEBUG: reported lidar: %s" % repr(json.loads(jsondata)))
+    def lidar(self, jsondata, timestamp):
+        #print("%s: reported lidar: %s" % (timestamp, repr(json.loads(jsondata))))
         pass
 
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
-    def attitude(self, jsondata):
-        #print("DEBUG: reported attitude: %s" % repr(json.loads(jsondata)))
+    def attitude(self, jsondata, timestamp):
+        #print("%s: reported attitude: %s" % (timestamp, repr(json.loads(jsondata))))
         pass
 
     def cleanup(self):
