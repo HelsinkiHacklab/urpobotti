@@ -8,6 +8,7 @@ import sys
 import visual
 import zmq
 import math
+import json
 
 DEBUG = False
 
@@ -31,7 +32,7 @@ class tank(object):
 
     def update_lidar_point(self, angle, dist_mm, quality):
         if (   angle < 0
-            or angle > 360):
+            or angle > 359):
                 print("ERROR: Got invalid angle %d" % angle)
                 return False
         angle_rad = angle * math.pi / 180.0
@@ -77,13 +78,15 @@ class myscene(object):
             self.scene.forward = visual.vector(0.80, -0.60, 0.03)
             while(True):
                 if self.poller:
-                    socks = dict(self.poller.poll(30))
+                    socks = dict(self.poller.poll())
                     if self.navidata in socks and socks[self.navidata] == zmq.POLLIN:
                         msg = self.navidata.recv_multipart()
 
                         if msg[0] == 'lidar':
-                            print("Got lidar data %s" % repr(msg[1:]))
-                            self.tank.update_lidar_point(int(msg[1]), int(msg[2]), int(msg[3]))
+                            #print("Got lidar data %s" % repr(msg[1:]))
+                            data = json.loads(msg[1])
+                            for angle in range(360):
+                                self.tank.update_lidar_point(angle, data[angle][0], data[angle][1])
                             pass
 
                         if msg[0] == 'attitude':
@@ -94,7 +97,6 @@ class myscene(object):
                     self.mbinteraction(self.scene.mouse.getevent())
                 elif self.scene.kb.keys:
                     self.kbinteraction(self.scene.kb.getkey())
-                visual.rate(30)
 
 
         except KeyboardInterrupt:
