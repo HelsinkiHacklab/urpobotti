@@ -14,7 +14,7 @@ SIGNALS_PORT = 7578
 lidarinfo = re.compile('(\d+): (\d+) \((\d+)\)')
 
 AHRS_BUFFER_SIZE = 5
-ANGLE_ADJUST = 180 # Add and modulo to adjust the reported angle so sensor orientation matches robot
+ANGLE_ADJUST = 3*90 # Add and modulo to adjust the reported angle so sensor orientation matches robot
 
 class navidataserver(zmqdecorators.service):
     def __init__(self, service_name, service_port, serialport):
