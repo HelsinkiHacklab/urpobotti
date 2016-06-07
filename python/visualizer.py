@@ -32,6 +32,12 @@ class tank(object):
         for angle in range(360):
             self.update_lidar_point(angle, 20, None)
 
+    def update_attitude(self, data):
+        (roll, pitch, yaw) = np.deg2rad(np.median(np.array(data, float), 0))
+        #print("DEBUG: avg roll=%f pitch=%f, yaw=%f (in radians!)" % (roll, pitch, yaw))
+        # the pitch is reversed and for some reason yaw is somehow fscked up
+        self.container.axis = (roll, pitch, yaw)
+
     def update_lidar_points(self, data):
         # TODO: can we optimize this more ?
         self.lidarpoints.pos = [ (np.sin(np.deg2rad(angle))*values[0], 0, np.cos(np.deg2rad(angle))*values[0]) for angle, values in enumerate(data) ]
@@ -89,11 +95,12 @@ class myscene(object):
                         msg = self.navidata.recv_multipart()
 
                         if msg[0] == 'lidar':
-                            print("%f: Got lidar data from %s" % (time.time(), msg[2]))
+                            #print("%f: Got lidar data from %s" % (time.time(), msg[2]))
                             self.tank.update_lidar_points(json.loads(msg[1]))
 
                         if msg[0] == 'attitude':
-                            print("%f: Got attitude data from %s" % (time.time(), msg[2]))
+                            #print("%f: Got attitude data from %s" % (time.time(), msg[2]))
+                            self.tank.update_attitude(json.loads(msg[1]))
                             pass
                 # Poll for events (the callback is in newer version)
                 if self.scene.mouse.events:
