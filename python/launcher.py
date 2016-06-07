@@ -58,6 +58,7 @@ class my_launcher(zmqdecorators.service):
                     continue
                 # Got a match, continue by setting up a new service object
                 port.close() # Free the port
+                time.sleep(0.150)
                 device_name = match.group(1)
                 if (self.start_board(serial_device, device_name)):
                     print "Found board %s in %f seconds" % (device_name, time.time() - started)
