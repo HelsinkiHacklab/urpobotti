@@ -74,6 +74,7 @@ MotorNOPID::MotorNOPID()
     pinMode(M2_PWM_PIN, OUTPUT);
     pinMode(M1_ENABLE_PIN, OUTPUT);
     pinMode(M2_ENABLE_PIN, OUTPUT);
+    setPWMspeeds(0,0);
 }
 
 bool MotorNOPID::canRun(uint32_t now)

@@ -315,6 +315,7 @@ void loop() //Main Loop
 {
   if (!Serial.dtr())
   {
+      // This works fine for Teensy 2
       Serial.println(F("No DTR detected, rebooting"));
       CPU_RESTART
       while(1);

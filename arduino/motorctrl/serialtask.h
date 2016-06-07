@@ -66,9 +66,23 @@ bool SerialReader::canRun(uint32_t now)
 {
     if (!Serial.dtr())
     {
+        // This works poorly for teensy 3.2
+        /*
         Serial.println(F("No DTR detected, rebooting"));
         CPU_RESTART
         while(1);
+        */
+        Serial.println(F("No DTR detected, stopping motors"));
+        motorctrl.setSpeeds(0,0);
+        // Wait for connection and print the message
+        while (!Serial.dtr())
+        {
+            ; // Wait for connection
+        }
+        Serial.println();
+        Serial.println(F("Board: motorctrl initializing"));
+        
+        
     }
     return Serial.available();
 }
