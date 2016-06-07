@@ -24,6 +24,10 @@ void setup()
     {
         ; // wait for serial port to connect. Needed for native USB port only
     }
+    while (!Serial.dtr())
+    {
+        ; // Wait for connection
+    }
     Serial.println();
     Serial.println(F("Board: motorctrl initializing"));
 

@@ -119,7 +119,7 @@ with MinIMU-9-Arduino-AHRS. If not, see <http://www.gnu.org/licenses/>.
 // Positive pitch : nose up
 // Positive roll : right wing down
 // Positive yaw : clockwise
-int SENSOR_SIGN[9] = {1,1,1,-1,-1,-1,1,1,1}; //Correct directions x,y,z - gyro, accelerometer, magnetometer
+int SENSOR_SIGN[9] = {-1,-1,1,-1,-1,-1,1,1,1}; //Correct directions x,y,z - gyro, accelerometer, magnetometer
 // Uncomment the below line to use this axis definition: 
    // X axis pointing forward
    // Y axis pointing to the left 
@@ -151,12 +151,12 @@ int SENSOR_SIGN[9] = {1,1,1,-1,-1,-1,1,1,1}; //Correct directions x,y,z - gyro, 
 
 // LSM303 magnetometer calibration constants; use the Calibrate example from
 // the Pololu LSM303 library to find the right values for your board
-#define M_X_MIN -421
-#define M_Y_MIN -639
-#define M_Z_MIN -238
-#define M_X_MAX 424
-#define M_Y_MAX 295
-#define M_Z_MAX 472
+#define M_X_MIN  +135
+#define M_Y_MIN -405
+#define M_Z_MIN 607
+#define M_X_MAX 902
+#define M_Y_MAX 261
+#define M_Z_MAX 985
 
 #define Kp_ROLLPITCH 0.02
 #define Ki_ROLLPITCH 0.00002
@@ -241,6 +241,10 @@ void setup()
   {
       ; // wait for serial port to connect. Needed for native USB port only
   }
+  while (!Serial.dtr())
+  {
+      ; // Wait for connection
+  }
   pinMode (STATUS_LED,OUTPUT);  // Status LED
   
   I2C_Init();
@@ -311,15 +315,9 @@ void loop() //Main Loop
 {
   if (!Serial.dtr())
   {
-      /**
-       * The disappearing serialport is a baaad idea
       Serial.println(F("No DTR detected, rebooting"));
       CPU_RESTART
       while(1);
-       */
-      // Print the ident line instead
-      Serial.println();
-      Serial.println(F("Board: MinIMU9AHRS_XV initializing"));
   }
   if((millis()-timer)>=20)  // Main loop runs at 50Hz
   {
