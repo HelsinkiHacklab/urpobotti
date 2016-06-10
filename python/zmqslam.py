@@ -13,8 +13,6 @@ from breezyslam.components import XVLidar as LaserModel
 
 from zmqlidar import ZMQLidar as Lidar
 
-from cvslamshow import SlamShow
-
 
 class slamthing(object):
     def __init__(self):
@@ -23,10 +21,7 @@ class slamthing(object):
     
         # Create an RMHC SLAM object with a laser model and optional robot model
         self.slam = RMHC_SLAM(LaserModel(), MAP_SIZE_PIXELS, MAP_SIZE_METERS)
-    
-        # Set up a SLAM display
-        #self.display = SlamShow(MAP_SIZE_PIXELS, MAP_SIZE_METERS*1000/MAP_SIZE_PIXELS, 'SLAM')
-    
+
         # Initialize an empty trajectory
         self.trajectory = []
     
