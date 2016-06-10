@@ -34,6 +34,7 @@ class navidataserver(zmqdecorators.service):
         self.serial_port.write("\r\n")
         self.serial_port.write("HideRaw\r\n")
         self.serial_port.write("ShowDist\r\n")
+        self.serial_port.write("ShowRPM\r\n")
         # Start motor
         time.sleep(0.1)
         self.serial_port.write("MotorOn\r\n")
@@ -84,7 +85,8 @@ class navidataserver(zmqdecorators.service):
                     self.attitude(json.dumps(self.AHRS_BUFFER), str(time.time()))
                     self.AHRS_BUFFER_I = 0
                 self.AHRS_BUFFER_I += 1
-                    
+            if (len(message) > 4 and message[:4] == 'RPM:'):
+                self.lidar_rpm(str(float(message[5:].split('PWM:')[0])), str(time.time()))
 
         except Exception as e:
             print "message_received exception: Got exception %s" % repr(e)
@@ -95,6 +97,11 @@ class navidataserver(zmqdecorators.service):
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
     def lidar(self, jsondata, timestamp):
         #print("%s: reported lidar: %s" % (timestamp, repr(json.loads(jsondata))))
+        pass
+
+    @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
+    def lidar_rpm(self, rpm, timestamp):
+        #print("%s: reported lidar_rpm: %s" % (timestamp, rpm))
         pass
 
     @zmqdecorators.signal(SERVICE_NAME, SIGNALS_PORT)
