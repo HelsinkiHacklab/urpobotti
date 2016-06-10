@@ -27,7 +27,7 @@ class motorserver(zmqdecorators.service):
             self._setspeeds(0,0)
 
     def _setspeeds(self, m1speed, m2speed):
-        self.serial_port.write("S%04X%04X\n" % ((m1speed & 0xffff), (m2speed & 0xffff)))
+        self.serial_port.write("S%04X%04X\n" % ((int(m1speed) & 0xffff), (int(m2speed) & 0xffff)))
 
     @zmqdecorators.method()
     def setspeeds(self, resp, m1speed, m2speed):
