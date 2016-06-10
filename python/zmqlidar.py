@@ -5,11 +5,13 @@ from zmq.eventloop import ioloop as ioloop_mod
 import zmqdecorators
 import json
 import time
+import collections
 
 class ZMQLidar(zmqdecorators.client):
     lidar_data = [(0,0) for x in range(360)]
     _last_lidar_time = None
     speed_rpm = 300
+    angle_adjust = 90
 
     def __init__(self, service_name):
         super(ZMQLidar, self).__init__()
@@ -20,6 +22,11 @@ class ZMQLidar(zmqdecorators.client):
     def lidar_callback(self, jsondata, timestamp):
         # TODO:reject too old data ?
         self.lidar_data = json.loads(jsondata)
+        if self.angle_adjust != 0:
+            dq = collections.deque(self.lidar_data)
+            dq.rotate(self.angle_adjust)
+            self.lidar_data = list(dq)
+            pass
         self._last_lidar_time = time.time()
 
     def rpm_callback(self, rpm, timestamp):
